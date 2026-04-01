@@ -91,6 +91,8 @@ const LoginPage = () => {
 }
 
 const TEAL = '#1a6b7a'
+const CARD_WIDTH = 580
+const CARD_HEIGHT = 460
 
 const styles = {
   root: {
@@ -116,7 +118,8 @@ const styles = {
     borderRadius: 4,
     padding: '48px 56px 36px',
     width: '100%',
-    maxWidth: 580,
+    maxWidth: CARD_WIDTH,
+    height: CARD_HEIGHT,
     boxShadow: '0 8px 40px rgba(0,0,0,0.18)'
   },
   field: {

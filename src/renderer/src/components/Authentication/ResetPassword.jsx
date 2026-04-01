@@ -29,152 +29,169 @@ const ResetPassword = () => {
 
       {/* Card */}
       <div style={styles.card}>
+        <div style={styles.cardInner}>
 
-        {/* ── Step: Email ── */}
-        {step === 'email' && (
-          <form onSubmit={handleSendOtp}>
-            <h2 style={styles.title}>Reset password</h2>
-            <p style={styles.subtitle}>Enter your Gmail to receive a one-time code.</p>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Username</label>
-              <input
-                style={styles.input}
-                type="email"
-                placeholder="alphadevs.user@gmail.com"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-              {fieldErrors.username && <div style={styles.error}>{fieldErrors.username}</div>}
-            </div>
-
-            {error && <div style={styles.error}>{error}</div>}
-
-            <button
-              type="submit"
-              style={{ ...styles.submitBtn, opacity: loading ? 0.7 : 1 }}
-              disabled={loading}
-            >
-              {loading ? 'Sending...' : 'Send OTP'}
-            </button>
-          </form>
-        )}
-
-        {/* ── Step: OTP ── */}
-        {step === 'otp' && (
-          <form onSubmit={handleVerifyOtp}>
-            <h2 style={styles.title}>Enter OTP</h2>
-            <p style={styles.subtitle}>
-              A 6-digit code was sent to{' '}
-              <span style={styles.emailHighlight}>{username}</span>
-            </p>
-
-            <div style={styles.otpRow}>
-              {otp.map((digit, i) => (
-                <input
-                  key={i}
-                  ref={(el) => (inputRefs.current[i] = el)}
-                  style={styles.otpBox}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleOtpChange(i, e.target.value)}
-                  onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                />
-              ))}
-            </div>
-
-            {error && <div style={styles.error}>{error}</div>}
-
-            <button
-              type="submit"
-              style={{ ...styles.submitBtn, opacity: loading ? 0.7 : 1 }}
-              disabled={loading}
-            >
-              {loading ? 'Verifying...' : 'Verify OTP'}
-            </button>
-
-            <div style={styles.resendRow}>
-              <button type="button" style={styles.linkBtn} onClick={handleResend} disabled={loading}>
-                Resend code
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* ── Step: New Password ── */}
-        {step === 'newPassword' && (
-          <form onSubmit={handleChangePassword}>
-            <h2 style={styles.title}>New password</h2>
-            <p style={styles.subtitle}>Choose a strong password for your account.</p>
-
-            <div style={styles.field}>
-              <label style={styles.label}>New password</label>
-              <div style={styles.passwordWrapper}>
-                <input
-                  style={{ ...styles.input, paddingRight: 36 }}
-                  type={showNew ? 'text' : 'password'}
-                  placeholder="x x x x x x x x"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-                <button type="button" style={styles.eyeBtn} onClick={() => setShowNew(v => !v)}>
-                  {showNew ? '🙈' : '👁️'}
-                </button>
-              </div>
-              {fieldErrors.newPassword && <div style={styles.error}>{fieldErrors.newPassword}</div>}
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Confirm password</label>
-              <div style={styles.passwordWrapper}>
-                <input
-                  style={{ ...styles.input, paddingRight: 36 }}
-                  type={showConfirm ? 'text' : 'password'}
-                  placeholder="x x x x x x x x"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-                <button type="button" style={styles.eyeBtn} onClick={() => setShowConfirm(v => !v)}>
-                  {showConfirm ? '🙈' : '👁️'}
-                </button>
-              </div>
-              {fieldErrors.confirmPassword && <div style={styles.error}>{fieldErrors.confirmPassword}</div>}
-            </div>
-
-            {error && <div style={styles.error}>{error}</div>}
-
-            <button
-              type="submit"
-              style={{ ...styles.submitBtn, opacity: loading ? 0.7 : 1 }}
-              disabled={loading}
-            >
-              {loading ? 'Saving...' : 'Change password'}
-            </button>
-          </form>
-        )}
-
-        {/* Footer */}
-        <div style={styles.footer}>
+          {/* ── Step: Email ── */}
           {step === 'email' && (
-            <Link to="/" style={styles.linkBtn}>← Back to login</Link>
-          )}
-          {step === 'otp' && (
-            <button type="button" style={styles.linkBtn} onClick={goBack}>← Back</button>
-          )}
-          {step === 'newPassword' && (
-            <span />
-          )}
-          <p style={styles.poweredBy}>Powered by <strong>Alpha Devs</strong></p>
-        </div>
+            <form onSubmit={handleSendOtp} style={styles.form}>
+              <div>
+                <h2 style={styles.title}>Reset password</h2>
+                <p style={styles.subtitle}>Enter your Gmail to receive a one-time code.</p>
 
+                <div style={styles.field}>
+                  <label style={styles.label}>Username</label>
+                  <input
+                    style={styles.input}
+                    type="email"
+                    placeholder="alphadevs.user@gmail.com"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                  {fieldErrors.username && <div style={styles.error}>{fieldErrors.username}</div>}
+                </div>
+
+                {error && <div style={styles.error}>{error}</div>}
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  style={{ ...styles.submitBtn, opacity: loading ? 0.7 : 1 }}
+                  disabled={loading}
+                >
+                  {loading ? 'Sending...' : 'Send OTP'}
+                </button>
+
+                <div style={styles.footer}>
+                  <Link to="/" style={styles.linkBtn}>← Back to login</Link>
+                  <p style={styles.poweredBy}>Powered by <strong>Alpha Devs</strong></p>
+                </div>
+              </div>
+            </form>
+          )}
+
+          {/* ── Step: OTP ── */}
+          {step === 'otp' && (
+            <form onSubmit={handleVerifyOtp} style={styles.form}>
+              <div>
+                <h2 style={styles.title}>Enter OTP</h2>
+                <p style={styles.subtitle}>
+                  A 6-digit code was sent to{' '}
+                  <span style={styles.emailHighlight}>{username}</span>
+                </p>
+
+                <div style={styles.otpRow}>
+                  {otp.map((digit, i) => (
+                    <input
+                      key={i}
+                      ref={(el) => (inputRefs.current[i] = el)}
+                      style={styles.otpBox}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(i, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                    />
+                  ))}
+                </div>
+
+                {error && <div style={styles.error}>{error}</div>}
+
+                <div style={styles.resendRow}>
+                  <button type="button" style={styles.linkBtn} onClick={handleResend} disabled={loading}>
+                    Resend code
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  style={{ ...styles.submitBtn, opacity: loading ? 0.7 : 1 }}
+                  disabled={loading}
+                >
+                  {loading ? 'Verifying...' : 'Verify OTP'}
+                </button>
+
+                <div style={styles.footer}>
+                  <button type="button" style={styles.linkBtn} onClick={goBack}>← Back</button>
+                  <p style={styles.poweredBy}>Powered by <strong>Alpha Devs</strong></p>
+                </div>
+              </div>
+            </form>
+          )}
+
+          {/* ── Step: New Password ── */}
+          {step === 'newPassword' && (
+            <form onSubmit={handleChangePassword} style={styles.form}>
+              <div>
+                <h2 style={styles.title}>New password</h2>
+                <p style={styles.subtitle}>Choose a strong password for your account.</p>
+
+                <div style={styles.field}>
+                  <label style={styles.label}>New password</label>
+                  <div style={styles.passwordWrapper}>
+                    <input
+                      style={{ ...styles.input, paddingRight: 36 }}
+                      type={showNew ? 'text' : 'password'}
+                      placeholder="x x x x x x x x"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                    <button type="button" style={styles.eyeBtn} onClick={() => setShowNew(v => !v)}>
+                      {showNew ? '🙈' : '👁️'}
+                    </button>
+                  </div>
+                  {fieldErrors.newPassword && <div style={styles.error}>{fieldErrors.newPassword}</div>}
+                </div>
+
+                <div style={styles.field}>
+                  <label style={styles.label}>Confirm password</label>
+                  <div style={styles.passwordWrapper}>
+                    <input
+                      style={{ ...styles.input, paddingRight: 36 }}
+                      type={showConfirm ? 'text' : 'password'}
+                      placeholder="x x x x x x x x"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                    <button type="button" style={styles.eyeBtn} onClick={() => setShowConfirm(v => !v)}>
+                      {showConfirm ? '🙈' : '👁️'}
+                    </button>
+                  </div>
+                  {fieldErrors.confirmPassword && <div style={styles.error}>{fieldErrors.confirmPassword}</div>}
+                </div>
+
+                {error && <div style={styles.error}>{error}</div>}
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  style={{ ...styles.submitBtn, opacity: loading ? 0.7 : 1 }}
+                  disabled={loading}
+                >
+                  {loading ? 'Saving...' : 'Change password'}
+                </button>
+
+                <div style={styles.footer}>
+                  <span />
+                  <p style={styles.poweredBy}>Powered by <strong>Alpha Devs</strong></p>
+                </div>
+              </div>
+            </form>
+          )}
+
+        </div>
       </div>
     </div>
   )
 }
 
 const TEAL = '#1a6b7a'
+const CARD_WIDTH = 580
+const CARD_HEIGHT = 460   // 👈 adjust this once and reuse everywhere
 
 const styles = {
   root: {
@@ -200,8 +217,22 @@ const styles = {
     borderRadius: 4,
     padding: '48px 56px 36px',
     width: '100%',
-    maxWidth: 580,
+    maxWidth: CARD_WIDTH,
+    height: CARD_HEIGHT,
     boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+    // same fixed height as login card content
+    minHeight: 420,
+  },
+  cardInner: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    minHeight: 340,
   },
   title: {
     fontSize: 22,
