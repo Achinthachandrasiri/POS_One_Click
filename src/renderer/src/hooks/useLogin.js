@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export const useLogin = () => {
   const [username, setUsername] = useState('')
@@ -6,6 +7,7 @@ export const useLogin = () => {
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
   // Validation
   const validate = () => {
@@ -54,7 +56,7 @@ export const useLogin = () => {
       const res = await window.api.auth.login(payload)
 
       if (res?.success) {
-        alert(`Logged in as ${res.user.username}`)
+        navigate('/dashboard')
       } else {
         if (res?.fieldErrors) {
           setFieldErrors(res.fieldErrors)

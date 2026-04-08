@@ -1,9 +1,11 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+const OTP_EXPIRE_SECONDS = 10 * 60
+const MAX_ATTEMPTS = 3
 
 export const useResetPassword = () => {
   const navigate = useNavigate()
-
   const [username, setUsername] = useState('')
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [newPassword, setNewPassword] = useState('')
@@ -12,20 +14,46 @@ export const useResetPassword = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
-
+  const [countdown, setCountdown] = useState(OTP_EXPIRE_SECONDS)
+  const [attemptsLeft, setAttemptsLeft] = useState(MAX_ATTEMPTS)
+  const [blocked, setBlocked] = useState(false)
   const inputRefs = useRef([])
+  const timerRef = useRef(null)
+
+  // ── Countdown timer ───────────────────────────────────────────
+  const startCountdown = () => {
+    setCountdown(OTP_EXPIRE_SECONDS)
+    clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current)
+          setBlocked(true)
+          setError('OTP has expired. Please request a new one.')
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }
+
+  useEffect(() => {
+    return () => clearInterval(timerRef.current)
+  }, [])
+
+  const formatTime = (secs) => {
+    const m = String(Math.floor(secs / 60)).padStart(2, '0')
+    const s = String(secs % 60).padStart(2, '0')
+    return `${m}:${s}`
+  }
 
   // ── OTP box handlers ──────────────────────────────────────────
   const handleOtpChange = (index, value) => {
     if (!/^\d?$/.test(value)) return
-
     const updated = [...otp]
     updated[index] = value
     setOtp(updated)
-
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus()
-    }
+    if (value && index < 5) inputRefs.current[index + 1]?.focus()
   }
 
   const handleOtpKeyDown = (index, e) => {
@@ -58,6 +86,10 @@ export const useResetPassword = () => {
 
       if (res?.success) {
         setStep('otp')
+        setAttemptsLeft(MAX_ATTEMPTS)
+        setBlocked(false)
+        setOtp(['', '', '', '', '', ''])
+        startCountdown()
         setTimeout(() => inputRefs.current[0]?.focus(), 50)
       } else {
         setFieldErrors({ username: res?.error || 'User not found' })
@@ -75,8 +107,12 @@ export const useResetPassword = () => {
     e.preventDefault()
     setError('')
 
-    const code = otp.join('')
+    if (blocked) {
+      setError("OTP has expired or you have exceeded the maximum attempts. Please request a new one.")
+      return
+    }
 
+    const code = otp.join('')
     if (code.length < 6) {
       setError('Please enter all 6 digits')
       return
@@ -88,9 +124,22 @@ export const useResetPassword = () => {
       const res = await window.api.auth.verifyOtp({ username: username.trim(), otp: code })
 
       if (res?.success) {
+        clearInterval(timerRef.current)
         setStep('newPassword')
       } else {
-        setError(res?.error || 'Invalid OTP. Please try again.')
+        const remaining = attemptsLeft - 1
+        setAttemptsLeft(remaining)
+
+        if (remaining <= 0) {
+          setBlocked(true)
+          clearInterval(timerRef.current)
+          setError('Too many failed attempts. Please request a new OTP.')
+        } else {
+          setError(`Invalid OTP. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`)
+        }
+
+        setOtp(['', '', '', '', '', ''])
+        setTimeout(() => inputRefs.current[0]?.focus(), 50)
       }
     } catch (err) {
       console.error(err)
@@ -144,11 +193,18 @@ export const useResetPassword = () => {
   const handleResend = async () => {
     setOtp(['', '', '', '', '', ''])
     setError('')
+    setBlocked(false)
+    setAttemptsLeft(MAX_ATTEMPTS)
     setLoading(true)
 
     try {
-      await window.api.auth.sendOtp({ username: username.trim() })
-      inputRefs.current[0]?.focus()
+      const res = await window.api.auth.sendOtp({ username: username.trim() })
+      if (res?.success) {
+        startCountdown()
+        setTimeout(() => inputRefs.current[0]?.focus(), 50)
+      } else {
+        setError(res?.error || 'Failed to resend. Please try again.')
+      }
     } catch (err) {
       console.error(err)
       setError('Failed to resend. Please try again.')
@@ -158,10 +214,14 @@ export const useResetPassword = () => {
   }
 
   const goBack = () => {
+    clearInterval(timerRef.current)
     setStep('email')
     setOtp(['', '', '', '', '', ''])
     setError('')
     setFieldErrors({})
+    setAttemptsLeft(MAX_ATTEMPTS)
+    setBlocked(false)
+    setCountdown(OTP_EXPIRE_SECONDS)
   }
 
   return {
@@ -177,6 +237,10 @@ export const useResetPassword = () => {
     error,
     fieldErrors,
     inputRefs,
+    countdown,
+    attemptsLeft,
+    blocked,
+    formatTime,
     handleSendOtp,
     handleVerifyOtp,
     handleChangePassword,
