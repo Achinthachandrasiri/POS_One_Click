@@ -7,12 +7,12 @@ export default defineConfig({
     environmentMatchGlobs: [
       ['tests/handlers/**', 'node'],
       ['tests/models/**', 'node'],
-      ['tests/hooks/**', 'jsdom'],  // ✅ hooks need jsdom for React/document
+      ['tests/hooks/**', 'jsdom'],
     ],
   },
   resolve: {
     alias: {
-      crypto: 'node:crypto'  // ✅ fixes 'crypto' import in resetPasswordController
+      crypto: 'node:crypto'  
     }
   }
 })
