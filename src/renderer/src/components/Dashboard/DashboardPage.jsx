@@ -1,11 +1,21 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 const DashboardPage = ({ user }) => {
   const navigate = useNavigate()
+  const location = useLocation()
 
   const handleLogout = () => {
     navigate('/')
   }
+
+  const navItems = [
+    { icon: '🏠', label: 'Dashboard', path: '/dashboard' },
+    { icon: '👥', label: 'Customers', path: '/customers/view' },
+    { icon: '👤', label: 'Profile' },
+    { icon: '⚙️', label: 'Settings' },
+    { icon: '📊', label: 'Reports' },
+    { icon: '🔔', label: 'Notifications' }
+  ]
 
   return (
     <div className="fixed inset-0 flex overflow-hidden font-['Segoe_UI',sans-serif] bg-[#225166]">
@@ -26,15 +36,13 @@ const DashboardPage = ({ user }) => {
 
         {/* Nav */}
         <nav className="flex flex-col gap-1 px-3 pt-5 flex-1">
-          {[
-            { icon: '🏠', label: 'Dashboard', active: true },
-            { icon: '👤', label: 'Profile' },
-            { icon: '⚙️', label: 'Settings' },
-            { icon: '📊', label: 'Reports' },
-            { icon: '🔔', label: 'Notifications' },
-          ].map(({ icon, label, active }) => (
+          {navItems.map(({ icon, label, path }) => {
+            const active = path ? location.pathname === path : false
+
+            return (
             <button
               key={label}
+              onClick={() => path && navigate(path)}
               className={`flex items-center gap-3 px-4 py-2.5 rounded-[4px] text-[14px] cursor-pointer border-none text-left w-full transition-colors
                 ${active
                   ? 'bg-[#1a6b7a] text-white'
@@ -44,7 +52,8 @@ const DashboardPage = ({ user }) => {
               <span>{icon}</span>
               <span>{label}</span>
             </button>
-          ))}
+            )
+          })}
         </nav>
 
         {/* Logout */}

@@ -14,6 +14,13 @@ contextBridge.exposeInMainWorld('api', {
     update: (data) => ipcRenderer.invoke('user:update', data),
     delete: (id) => ipcRenderer.invoke('user:delete', id),
     unlock: (id) => ipcRenderer.invoke('user:unlock', id)
+  },
+  customer: {
+    create: (data) => ipcRenderer.invoke('customer:create', data),
+    getAll: () => ipcRenderer.invoke('customer:getAll'),
+    getById: (id) => ipcRenderer.invoke('customer:getById', id),
+    update: (data) => ipcRenderer.invoke('customer:update', data),
+    delete: (id) => ipcRenderer.invoke('customer:delete', id)
   }
 })
 
