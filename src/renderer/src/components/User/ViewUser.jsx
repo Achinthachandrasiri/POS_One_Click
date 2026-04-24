@@ -1,30 +1,31 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useCustomerHooks } from '../../hooks/customerHooks'
+import { useUserHooks } from '../../hooks/userHooks'
 
-const ViewCustomer = () => {
+const ViewUser = () => {
   const navigate = useNavigate()
-  const { getAllCustomers, deleteCustomer, loading, error } = useCustomerHooks()
-  const [customers, setCustomers] = useState([])
+  const { getAllUsers, deleteUser, loading, error } = useUserHooks()
+  const [users, setUsers] = useState([])
 
-  const loadCustomers = async () => {
-    const res = await getAllCustomers()
+  const loadUsers = async () => {
+    const res = await getAllUsers()
     if (res?.success) {
-      setCustomers(res.customers || [])
+      const normalized = (res.users || []).map((u) => u._doc ?? u)
+      setUsers(normalized)
     }
   }
 
   useEffect(() => {
-    loadCustomers()
+    loadUsers()
   }, [])
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this customer?')
+    const confirmDelete = window.confirm('Are you sure you want to delete this user?')
     if (!confirmDelete) return
 
-    const res = await deleteCustomer(id)
+    const res = await deleteUser(id)
     if (res?.success) {
-      setCustomers((prev) => prev.filter((c) => c._id !== id))
+      setUsers((prev) => prev.filter((u) => u._id !== id))
     }
   }
 
@@ -32,42 +33,35 @@ const ViewCustomer = () => {
     <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
       <div className="flex flex-col h-[630px]">
 
-        {/* Background blobs — positioned relative to this container */}
+        {/* Background blobs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute w-[880px] h-[780px] bg-[#2699aa] opacity-40 rounded-full right-[-200px] bottom-[-200px]" />
           <div className="absolute w-[580px] h-[580px] bg-[#30aabb] opacity-25 rounded-full right-[-120px] bottom-[-120px]" />
           <div className="absolute w-[420px] h-[420px] bg-[#2699aa] opacity-30 rounded-full left-[-80px] top-[-80px] p-0 m-0" />
         </div>
 
-        {/* Page title — above the card */}
+        {/* Page title */}
         <div className="relative z-10 mb-5">
-          <h1 className="text-white text-[22px] font-semibold m-0">Customer</h1>
-          <p className="text-[#90bcc4] text-[15px] mt-1">Manage customer records</p>
+          <h1 className="text-white text-[22px] font-semibold m-0">Users</h1>
+          <p className="text-[#90bcc4] text-[15px] mt-1">Manage user records</p>
         </div>
 
         {/* Card */}
         <div className="relative z-10 bg-white w-full px-14 py-10 shadow-xl rounded-t-[20px] overflow-auto" style={{ height: 'calc(100% - 70px)' }}>
-
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-[#1a6b7a]">
-                Customers
-              </h2>
-              <p className="text-xs text-gray-500">
-                Manage customer records
-              </p>
+              <h2 className="text-lg font-semibold text-[#1a6b7a]">Users</h2>
+              <p className="text-xs text-gray-500">Manage user records</p>
             </div>
 
-            <div className="flex gap-2">
-              <div className="flex justify-end mt-4 gap-2">
-                <button
-                  onClick={() => navigate('/dashboard/customers/create')}
-                  className="bg-[#2699aa] text-white text-md px-6 py-3 rounded hover:opacity-90"
-                >
-                  + Create Customer
-                </button>
-              </div>
+            <div className="flex justify-end mt-4 gap-2">
+              <button
+                onClick={() => navigate('/dashboard/users/create')}
+                className="bg-[#2699aa] text-white text-md px-6 py-3 rounded hover:opacity-90"
+              >
+                + Create User
+              </button>
             </div>
           </div>
 
@@ -81,45 +75,44 @@ const ViewCustomer = () => {
             <table className="w-full min-w-[760px] border-collapse text-sm">
               <thead>
                 <tr className="bg-[#f5fbfd] text-[#2a5b67] text-xs">
-                  <th className="text-left px-3 py-2 border-b">Name</th>
+                  <th className="text-left px-3 py-2 border-b">First Name</th>
+                  <th className="text-left px-3 py-2 border-b">Last Name</th>
+                  <th className="text-left px-3 py-2 border-b">Email</th>
                   <th className="text-left px-3 py-2 border-b">Mobile</th>
-                  <th className="text-left px-3 py-2 border-b">NIC</th>
-                  <th className="text-left px-3 py-2 border-b">Address</th>
+                  <th className="text-left px-3 py-2 border-b">Role</th>
                   <th className="text-right px-3 py-2 border-b">Actions</th>
                 </tr>
               </thead>
 
               <tbody>
-                {customers.length === 0 && !loading ? (
+                {users.length === 0 && !loading ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-6 text-gray-500 text-xs">
-                      No customers found
+                    <td colSpan={6} className="text-center py-6 text-gray-500 text-xs">
+                      No users found
                     </td>
                   </tr>
                 ) : (
-                  customers.map((customer) => (
-                    <tr key={customer._id} className="border-b hover:bg-gray-50">
-                      <td className="px-3 py-2">{customer.name}</td>
-                      <td className="px-3 py-2">{customer.mobileNumber}</td>
-                      <td className="px-3 py-2">{customer.nicNumber}</td>
-                      <td className="px-3 py-2">{customer.address}</td>
+                  users.map((user) => (
+                    <tr key={user._id} className="border-b hover:bg-gray-50">
+                      <td className="px-3 py-2">{user.first_name}</td>
+                      <td className="px-3 py-2">{user.last_name}</td>
+                      <td className="px-3 py-2">{user.email}</td>
+                      <td className="px-3 py-2">{user.mobile}</td>
+                      <td className="px-3 py-2 capitalize">{user.role}</td>
                       <td className="px-3 py-2 text-right">
                         <div className="inline-flex gap-2 justify-end w-full">
-
                           <button
-                            onClick={() => navigate(`/dashboard/customers/edit/${customer._id}`)}
+                            onClick={() => navigate(`/dashboard/users/edit/${user._id}`)}
                             className="bg-white text-blue-500 text-sm px-3 py-1 rounded hover:opacity-90"
                           >
                             <i className="fas fa-pen"></i>
                           </button>
-
                           <button
-                            onClick={() => handleDelete(customer._id)}
+                            onClick={() => handleDelete(user._id)}
                             className="bg-white text-red-500 text-sm px-3 py-1 rounded hover:opacity-90"
                           >
                             <i className="fas fa-trash"></i>
                           </button>
-
                         </div>
                       </td>
                     </tr>
@@ -134,4 +127,4 @@ const ViewCustomer = () => {
   )
 }
 
-export default ViewCustomer
+export default ViewUser

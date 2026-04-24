@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
+const { Menu } = require('electron')
 import 'dotenv/config'
 import { connectDB } from './database/dbConfig'
 import { registerIpcHandlers } from './ipc'
@@ -19,7 +20,13 @@ function createWindow() {
       nodeIntegration: false
     }
   })
-  //win.webContents.openDevTools()
+  //  REMOVE TOP MENU BAR
+  Menu.setApplicationMenu(null)
+
+  // Optional (extra safety)
+  win.setMenuBarVisibility(false)
+  win.webContents.openDevTools()
+
   win.maximize()
 
   if (process.env.VITE_DEV_SERVER_URL) {

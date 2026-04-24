@@ -5,6 +5,7 @@ import { useCustomerHooks } from '../../hooks/customerHooks'
 const CreateCustomer = () => {
   const navigate = useNavigate()
   const { createCustomer, loading, error, fieldErrors, setFieldErrors } = useCustomerHooks()
+
   const [success, setSuccess] = useState('')
   const [form, setForm] = useState({
     name: '',
@@ -32,176 +33,134 @@ const CreateCustomer = () => {
   }
 
   return (
-    <div style={styles.root}>
-      <svg style={styles.bgSvg} viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
-        <ellipse cx="1180" cy="980" rx="680" ry="680" fill="#2699aa" opacity="0.55" />
-        <ellipse cx="1220" cy="1020" rx="480" ry="480" fill="#30aabb" opacity="0.30" />
-        <ellipse cx="-60" cy="-40" rx="320" ry="320" fill="#0e5a6a" opacity="0.40" />
-      </svg>
+    <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
+      <div className="flex flex-col h-[630px]">
 
-      <div style={styles.card}>
-        <h2 style={styles.title}>Create Customer</h2>
-        <p style={styles.subtitle}>Add a new customer record</p>
+        {/* Background blobs — positioned relative to this container */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute w-[880px] h-[780px] bg-[#2699aa] opacity-40 rounded-full right-[-200px] bottom-[-200px]" />
+          <div className="absolute w-[580px] h-[580px] bg-[#30aabb] opacity-25 rounded-full right-[-120px] bottom-[-120px]" />
+          <div className="absolute w-[420px] h-[420px] bg-[#2699aa] opacity-30 rounded-full left-[-80px] top-[-80px] p-0 m-0" />
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div style={styles.field}>
-            <label style={styles.label}>Name</label>
-            <input
-              style={styles.input}
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Customer name"
-            />
-            {fieldErrors.name && <div style={styles.error}>{fieldErrors.name}</div>}
-          </div>
+        {/* Page title — above the card */}
+        <div className="relative z-10 mb-5">
+          <h1 className="text-white text-[22px] font-semibold m-0">Create Customer</h1>
+          <p className="text-[#90bcc4] text-[15px] mt-1">Fill in all fields to create a new customer record</p>
+        </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Mobile Number</label>
-            <input
-              style={styles.input}
-              type="text"
-              name="mobileNumber"
-              value={form.mobileNumber}
-              onChange={handleChange}
-              placeholder="0771234567"
-              maxLength={10}
-            />
-            {fieldErrors.mobileNumber && <div style={styles.error}>{fieldErrors.mobileNumber}</div>}
-          </div>
+        {/* Card */}
+        <div className="relative z-10 bg-white w-full px-14 py-10 shadow-xl rounded-t-[20px] overflow-auto" style={{ height: 'calc(100% - 70px)' }}>
+          <form onSubmit={handleSubmit} className="space-y-4">
 
-          <div style={styles.field}>
-            <label style={styles.label}>NIC Number</label>
-            <input
-              style={styles.input}
-              type="text"
-              name="nicNumber"
-              value={form.nicNumber}
-              onChange={handleChange}
-              placeholder="200012345678 or 123456789V"
-              maxLength={12}
-            />
-            {fieldErrors.nicNumber && <div style={styles.error}>{fieldErrors.nicNumber}</div>}
-          </div>
+            {/* Name */}
+            <div className="flex gap-6">
+              <div className="flex-1">
+                <label className="text-sm text-gray-700">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Customer name"
+                  className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
+                />
+                {fieldErrors.name && (
+                  <p className="text-red-600 text-xs mt-1">{fieldErrors.name}</p>
+                )}
+              </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Address</label>
-            <textarea
-              style={{ ...styles.input, minHeight: 90, resize: 'vertical' }}
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Customer address"
-            />
-            {fieldErrors.address && <div style={styles.error}>{fieldErrors.address}</div>}
-          </div>
+              {/* Mobile */}
+              <div className="flex-1">
+                <label className="text-sm text-gray-700">
+                  Mobile Number
+                </label>
+                <input
+                  type="text"
+                  name="mobileNumber"
+                  value={form.mobileNumber}
+                  onChange={handleChange}
+                  placeholder="0771234567"
+                  maxLength={10}
+                  className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
+                />
+                {fieldErrors.mobileNumber && (
+                  <p className="text-red-600 text-xs mt-1">{fieldErrors.mobileNumber}</p>
+                )}
+              </div>
+            </div>
 
-          {error && <div style={styles.error}>{error}</div>}
-          {success && <div style={styles.success}>{success}</div>}
+            {/* NIC */}
+            <div className="flex gap-6">
+              <div className="flex-1">
+                <label className="text-sm text-gray-700">
+                  NIC Number
+                </label>
+                <input
+                  type="text"
+                  name="nicNumber"
+                  value={form.nicNumber}
+                  onChange={handleChange}
+                  placeholder="200012345678 or 123456789V"
+                  maxLength={12}
+                  className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
+                />
+                {fieldErrors.nicNumber && (
+                  <p className="text-red-600 text-xs mt-1">{fieldErrors.nicNumber}</p>
+                )}
+              </div>
+            </div>
 
-          <div style={styles.actions}>
-            <button
-              type="button"
-              style={{ ...styles.btn, ...styles.secondaryBtn }}
-              onClick={() => navigate('/customers/view')}
-            >
-              View Customers
-            </button>
-            <button type="submit" style={styles.btn} disabled={loading}>
-              {loading ? 'Saving...' : 'Create Customer'}
-            </button>
-          </div>
-        </form>
+            {/* Address */}
+            <div className="flex-1">
+              <label className="text-sm text-gray-700">
+                Address
+              </label>
+              <input
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+                placeholder="Customer address"
+                className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
+              />
+              {fieldErrors.address && (
+                <p className="text-red-600 text-xs mt-1">{fieldErrors.address}</p>
+              )}
+            </div>
+
+            {/* Messages */}
+            {error && <p className="text-red-600 text-xs">{error}</p>}
+            {success && <p className="text-green-600 text-xs">{success}</p>}
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard/customers')}
+                className="bg-[#0e5a6a] text-white text-md px-6 py-3 rounded hover:opacity-90"
+              >
+                View Customers
+              </button>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-[#2699aa] text-white text-md px-6 py-3 rounded hover:opacity-90"
+              >
+                {loading ? 'Saving...' : 'Save Customer'}
+              </button>
+            </div>
+
+          </form>
+          <p className="text-xs text-gray-500 mt-6 text-center">
+            Powered by <strong>Alpha Devs</strong>
+          </p>
+        </div>
       </div>
     </div>
   )
-}
-
-const styles = {
-  root: {
-    position: 'fixed',
-    inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#225166',
-    overflow: 'hidden',
-    fontFamily: "'Segoe UI', sans-serif",
-    padding: 16
-  },
-  bgSvg: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    pointerEvents: 'none'
-  },
-  card: {
-    position: 'relative',
-    zIndex: 1,
-    background: '#fff',
-    borderRadius: 4,
-    padding: '28px 32px',
-    width: '100%',
-    maxWidth: 560,
-    boxShadow: '0 8px 40px rgba(0,0,0,0.18)'
-  },
-  title: {
-    margin: 0,
-    color: '#1a6b7a'
-  },
-  subtitle: {
-    marginTop: 6,
-    marginBottom: 18,
-    color: '#666',
-    fontSize: 13
-  },
-  field: {
-    marginBottom: 14
-  },
-  label: {
-    display: 'block',
-    marginBottom: 6,
-    color: '#444',
-    fontSize: 13,
-    fontWeight: 600
-  },
-  input: {
-    width: '100%',
-    border: '1px solid #d9e3e6',
-    borderRadius: 4,
-    padding: '10px 12px',
-    fontSize: 14,
-    outline: 'none'
-  },
-  error: {
-    color: '#c0392b',
-    fontSize: 12,
-    marginTop: 6
-  },
-  success: {
-    color: '#1e824c',
-    fontSize: 12,
-    marginTop: 6
-  },
-  actions: {
-    marginTop: 18,
-    display: 'flex',
-    gap: 10,
-    justifyContent: 'flex-end'
-  },
-  btn: {
-    border: 'none',
-    borderRadius: 4,
-    background: '#2699aa',
-    color: '#fff',
-    padding: '10px 14px',
-    fontSize: 13,
-    cursor: 'pointer'
-  },
-  secondaryBtn: {
-    background: '#0e5a6a'
-  }
 }
 
 export default CreateCustomer

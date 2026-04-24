@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const CreateUserPage = () => {
   const [form, setForm] = useState({
@@ -9,11 +10,13 @@ const CreateUserPage = () => {
     password: '',
     role: ''
   })
+
   const [showPassword, setShowPassword] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({})
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -30,7 +33,6 @@ const CreateUserPage = () => {
 
     try {
       const res = await window.api.user.create(form)
-
       if (res?.success) {
         setSuccess('User created successfully!')
         setForm({ first_name: '', last_name: '', email: '', mobile: '', password: '', role: '' })
@@ -48,249 +50,151 @@ const CreateUserPage = () => {
   }
 
   return (
-    <div style={styles.root}>
-      {/* Background */}
-      <svg style={styles.bgSvg} viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
-        <ellipse cx="1180" cy="980" rx="680" ry="680" fill="#2699aa" opacity="0.55" />
-        <ellipse cx="1220" cy="1020" rx="480" ry="480" fill="#30aabb" opacity="0.30" />
-        <ellipse cx="-60" cy="-40" rx="320" ry="320" fill="#0e5a6a" opacity="0.40" />
-      </svg>
+    <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
+      <div className="flex flex-col h-[630px]">
+        {/* Background blobs — positioned relative to this container */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute w-[880px] h-[780px] bg-[#2699aa] opacity-40 rounded-full right-[-200px] bottom-[-200px]" />
+          <div className="absolute w-[580px] h-[580px] bg-[#30aabb] opacity-25 rounded-full right-[-120px] bottom-[-120px]" />
+          <div className="absolute w-[420px] h-[420px] bg-[#2699aa] opacity-30 rounded-full left-[-80px] top-[-80px] p-0 m-0" />
+        </div>
 
-      {/* Card */}
-      <div style={styles.card}>
-        <h2 style={styles.title}>Create User</h2>
-        <p style={styles.subtitle}>Fill in all fields to create a new account</p>
+        {/* Page title — above the card */}
+        <div className="relative z-10 mb-5">
+          <h1 className="text-white text-[22px] font-semibold m-0">Create User</h1>
+          <p className="text-[#90bcc4] text-[15px] mt-1">Fill in all fields to create a new account</p>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          {/* Row 1 — First & Last Name */}
-          <div style={styles.row}>
-            <div style={{ ...styles.field, flex: 1 }}>
-              <label style={styles.label}>First Name</label>
-              <input
-                style={styles.input}
-                name="first_name"
-                type="text"
-                placeholder="John"
-                value={form.first_name}
-                onChange={handleChange}
-              />
-              {fieldErrors.first_name && <div style={styles.error}>{fieldErrors.first_name}</div>}
-            </div>
+        {/* Card */}
+        <div className="relative z-10 bg-white w-full px-14 py-10 shadow-xl rounded-t-[20px] overflow-auto" style={{ height: 'calc(100% - 70px)' }}>
 
-            <div style={{ width: 24 }} />
+          <form onSubmit={handleSubmit} className="space-y-4">
 
-            <div style={{ ...styles.field, flex: 1 }}>
-              <label style={styles.label}>Last Name</label>
-              <input
-                style={styles.input}
-                name="last_name"
-                type="text"
-                placeholder="Doe"
-                value={form.last_name}
-                onChange={handleChange}
-              />
-              {fieldErrors.last_name && <div style={styles.error}>{fieldErrors.last_name}</div>}
-            </div>
-          </div>
-
-          {/* Email */}
-          <div style={styles.field}>
-            <label style={styles.label}>Email</label>
-            <input
-              style={styles.input}
-              name="email"
-              type="email"
-              placeholder="john.doe@gmail.com"
-              value={form.email}
-              onChange={handleChange}
-            />
-            {fieldErrors.email && <div style={styles.error}>{fieldErrors.email}</div>}
-          </div>
-
-          {/* Mobile */}
-          <div style={styles.field}>
-            <label style={styles.label}>Mobile Number</label>
-            <input
-              style={styles.input}
-              name="mobile"
-              type="text"
-              placeholder="0771234567"
-              maxLength={10}
-              value={form.mobile}
-              onChange={handleChange}
-            />
-            {fieldErrors.mobile && <div style={styles.error}>{fieldErrors.mobile}</div>}
-          </div>
-
-          {/* Row 2 — Role & Password */}
-          <div style={styles.row}>
-            {/* Role */}
-            <div style={{ ...styles.field, flex: 1 }}>
-              <label style={styles.label}>Role</label>
-              <select
-                style={{ ...styles.input, cursor: 'pointer' }}
-                name="role"
-                value={form.role}
-                onChange={handleChange}
-              >
-                <option value="">Select role</option>
-                <option value="super_admin">Super Admin</option>
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
-              </select>
-              {fieldErrors.role && <div style={styles.error}>{fieldErrors.role}</div>}
-            </div>
-
-            <div style={{ width: 24 }} />
-
-            {/* Password */}
-            <div style={{ ...styles.field, flex: 1 }}>
-              <label style={styles.label}>Password</label>
-              <div style={styles.passwordWrapper}>
+            {/* Row 1 */}
+            <div className="flex gap-6">
+              <div className="flex-1">
+                <label className="text-sm text-gray-700">First Name</label>
                 <input
-                  style={{ ...styles.input, paddingRight: 36 }}
+                  name="first_name"
+                  value={form.first_name}
+                  onChange={handleChange}
+                  placeholder="John"
+                  className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
+                />
+                {fieldErrors.first_name && <p className="text-red-600 text-xs mt-1">{fieldErrors.first_name}</p>}
+              </div>
+              <div className="flex-1">
+                <label className="text-sm text-gray-700">Last Name</label>
+                <input
+                  name="last_name"
+                  value={form.last_name}
+                  onChange={handleChange}
+                  placeholder="Doe"
+                  className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
+                />
+                {fieldErrors.last_name && <p className="text-red-600 text-xs mt-1">{fieldErrors.last_name}</p>}
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="flex gap-6">
+              <div className="flex-1">
+                <label className="text-sm text-gray-700">Email</label>
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="john@gmail.com"
+                  className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
+                />
+                {fieldErrors.email && <p className="text-red-600 text-xs mt-1">{fieldErrors.email}</p>}
+              </div>
+
+              {/* Mobile */}
+              <div className="flex-1">
+                <label className="text-sm text-gray-700">Mobile</label>
+                <input
+                  name="mobile"
+                  value={form.mobile}
+                  onChange={handleChange}
+                  placeholder="0771234567"
+                  maxLength={10}
+                  className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
+                />
+                {fieldErrors.mobile && <p className="text-red-600 text-xs mt-1">{fieldErrors.mobile}</p>}
+              </div>
+            </div>
+
+            {/* Row 2 */}
+            <div className="flex gap-6">
+              <div className="flex-1">
+                <label className="text-sm text-gray-700">Role</label>
+                <select
+                  name="role"
+                  value={form.role}
+                  onChange={handleChange}
+                  className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
+                >
+                  <option value="">Select role</option>
+                  <option value="super_admin">Super Admin</option>
+                  <option value="admin">Admin</option>
+                  <option value="user">User</option>
+                </select>
+                {fieldErrors.role && <p className="text-red-600 text-xs mt-1">{fieldErrors.role}</p>}
+              </div>
+
+              <div className="flex-1 relative">
+                <label className="text-sm text-gray-700">Password</label>
+                <input
                   name="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="x x x x x x x x"
                   value={form.password}
                   onChange={handleChange}
+                  placeholder="********"
+                  className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 pr-10 bg-transparent"
                 />
                 <button
                   type="button"
-                  style={styles.eyeBtn}
-                  onClick={() => setShowPassword((v) => !v)}
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-0 top-7 text-sm"
                 >
                   {showPassword ? '🙈' : '👁️'}
                 </button>
+                {fieldErrors.password && <p className="text-red-600 text-xs mt-1">{fieldErrors.password}</p>}
               </div>
-              {fieldErrors.password && <div style={styles.error}>{fieldErrors.password}</div>}
             </div>
-          </div>
 
-          {/* Global error / success */}
-          {error && <div style={styles.error}>{error}</div>}
-          {success && <div style={styles.success}>{success}</div>}
+            {error && <p className="text-red-600 text-sm">{error}</p>}
+            {success && <p className="text-teal-700 text-sm">{success}</p>}
 
-          {/* Submit */}
-          <button
-            type="submit"
-            style={{ ...styles.submitBtn, opacity: loading ? 0.7 : 1 }}
-            disabled={loading}
-          >
-            {loading ? 'Creating...' : 'Create User'}
-          </button>
-        </form>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard/users')}
+                className="bg-[#0e5a6a] text-white text-md px-6 py-3 rounded hover:opacity-90"
+              >
+                View User
+              </button>
 
-        <p style={styles.footer}>
-          Powered by <strong>Alpha Devs</strong>
-        </p>
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-[#2699aa] text-white text-md px-6 py-3 rounded hover:opacity-90"
+              >
+                {loading ? 'Saving...' : 'Save User'}
+              </button>
+            </div>
+
+          </form>
+
+          <p className="text-xs text-gray-500 mt-6 text-center">
+            Powered by <strong>Alpha Devs</strong>
+          </p>
+        </div>
       </div>
     </div>
   )
-}
-
-const TEAL = '#1a6b7a'
-
-const styles = {
-  root: {
-    position: 'fixed',
-    inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#225166',
-    overflow: 'hidden',
-    fontFamily: "'Segoe UI', sans-serif"
-  },
-  bgSvg: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    pointerEvents: 'none'
-  },
-  card: {
-    position: 'relative',
-    zIndex: 1,
-    background: '#fff',
-    borderRadius: 4,
-    padding: '40px 56px 36px',
-    width: '100%',
-    maxWidth: 680,
-    boxShadow: '0 8px 40px rgba(0,0,0,0.18)'
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 600,
-    color: '#222',
-    marginBottom: 4
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#888',
-    marginBottom: 28
-  },
-  row: {
-    display: 'flex',
-    alignItems: 'flex-start'
-  },
-  field: {
-    marginBottom: 18
-  },
-  label: {
-    fontSize: 14,
-    color: '#222',
-    marginBottom: 8,
-    display: 'block'
-  },
-  input: {
-    width: '100%',
-    border: 'none',
-    borderBottom: '1.5px solid #ccc',
-    outline: 'none',
-    fontSize: 15,
-    padding: '6px 0',
-    background: 'transparent',
-    boxSizing: 'border-box'
-  },
-  passwordWrapper: {
-    position: 'relative'
-  },
-  eyeBtn: {
-    position: 'absolute',
-    right: 0,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer'
-  },
-  submitBtn: {
-    width: '100%',
-    padding: '14px 0',
-    marginTop: 10,
-    background: TEAL,
-    color: '#fff',
-    border: 'none',
-    borderRadius: 3,
-    fontSize: 16,
-    cursor: 'pointer'
-  },
-  footer: {
-    marginTop: 24,
-    fontSize: 13,
-    color: '#777'
-  },
-  error: {
-    color: '#c0392b',
-    fontSize: 13,
-    marginTop: 6
-  },
-  success: {
-    color: '#1a6b7a',
-    fontSize: 13,
-    marginTop: 6,
-    marginBottom: 6
-  }
 }
 
 export default CreateUserPage
