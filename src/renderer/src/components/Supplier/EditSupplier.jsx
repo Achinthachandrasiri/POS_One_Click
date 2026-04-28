@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useCustomerHooks } from '../../hooks/customerHooks'
+import { useSupplierHooks } from '../../hooks/supplierHooks'
 
-const EditCustomer = () => {
+const EditSupplier = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const {
@@ -11,9 +11,9 @@ const EditCustomer = () => {
     fieldErrors,
     setError,
     setFieldErrors,
-    getCustomerById,
-    updateCustomer
-  } = useCustomerHooks()
+    getSupplierById,
+    updateSupplier
+  } = useSupplierHooks()
 
   const [form, setForm] = useState({
     name: '',
@@ -24,19 +24,19 @@ const EditCustomer = () => {
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
-    const loadCustomer = async () => {
-      const res = await getCustomerById(id)
-      if (res?.success && res.customer) {
+    const loadSupplier = async () => {
+      const res = await getSupplierById(id)
+      if (res?.success && res.supplier) {
         setForm({
-          name: res.customer.name || '',
-          mobileNumber: res.customer.mobileNumber || '',
-          nicNumber: res.customer.nicNumber || '',
-          address: res.customer.address || ''
+          name: res.supplier.name || '',
+          mobileNumber: res.supplier.mobileNumber || '',
+          nicNumber: res.supplier.nicNumber || '',
+          address: res.supplier.address || ''
         })
       }
     }
 
-    loadCustomer()
+    loadSupplier()
   }, [id])
 
   const handleChange = (e) => {
@@ -51,10 +51,10 @@ const EditCustomer = () => {
     e.preventDefault()
     setSuccess('')
 
-    const res = await updateCustomer(id, form)
+    const res = await updateSupplier(id, form)
     if (res?.success) {
-      setSuccess('Customer updated successfully')
-      setTimeout(() => navigate('/dashboard/customers'), 500)
+      setSuccess('Supplier updated successfully')
+      setTimeout(() => navigate('/dashboard/suppliers'), 500)
     }
   }
 
@@ -67,8 +67,8 @@ const EditCustomer = () => {
       </svg>
 
       <div style={styles.card}>
-        <h2 style={styles.title}>Edit Customer</h2>
-        <p style={styles.subtitle}>Update customer details</p>
+        <h2 style={styles.title}>Edit Supplier</h2>
+        <p style={styles.subtitle}>Update supplier details</p>
 
         <form onSubmit={handleSubmit}>
           <div style={styles.field}>
@@ -121,12 +121,12 @@ const EditCustomer = () => {
             <button
               type="button"
               style={{ ...styles.btn, ...styles.secondaryBtn }}
-              onClick={() => navigate('/dashboard/customers')}
+              onClick={() => navigate('/dashboard/suppliers')}
             >
               Cancel
             </button>
             <button type="submit" style={styles.btn} disabled={loading}>
-              {loading ? 'Updating...' : 'Update Customer'}
+              {loading ? 'Updating...' : 'Update Supplier'}
             </button>
           </div>
         </form>
@@ -221,4 +221,4 @@ const styles = {
   }
 }
 
-export default EditCustomer
+export default EditSupplier

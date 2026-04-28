@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export const useLogin = () => {
@@ -7,14 +7,34 @@ export const useLogin = () => {
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [bootstrapMessage, setBootstrapMessage] = useState('')
   const navigate = useNavigate()
 
+  useEffect(() => {
+    const bootstrapTempAdmin = async () => {
+      try {
+        const res = await window.api.auth.bootstrapTempAdmin()
+
+        if (res?.success && res.created && res.credentials) {
+          setUsername(res.credentials.email)
+          setPassword(res.credentials.password)
+          setBootstrapMessage('Temporary admin created for first-time access. Logging you in now.')
+          await handleLogin(null, res.credentials)
+        }
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    bootstrapTempAdmin()
+  }, [])
+
   // Validation
-  const validate = () => {
+  const validate = (currentUsername, currentPassword) => {
     const errors = {}
 
-    const trimmedUsername = username.trim()
-    const trimmedPassword = password.trim()
+    const trimmedUsername = currentUsername.trim()
+    const trimmedPassword = currentPassword.trim()
 
     // Username validation
     if (!trimmedUsername) {
@@ -36,20 +56,24 @@ export const useLogin = () => {
   }
 
   // Submit
-  const handleLogin = async (e) => {
-    e.preventDefault()
+  const handleLogin = async (e, overrides = {}) => {
+    e?.preventDefault?.()
 
     setError('')
     setFieldErrors({})
+    setBootstrapMessage('')
 
-    if (!validate()) return
+    const currentUsername = overrides.username ?? username
+    const currentPassword = overrides.password ?? password
+
+    if (!validate(currentUsername, currentPassword)) return
 
     setLoading(true)
 
     try {
       const payload = {
-        username: username.trim(),
-        password: password.trim(),
+        username: currentUsername.trim(),
+        password: currentPassword.trim(),
         loginTime: new Date().toISOString()
       }
 
@@ -80,6 +104,7 @@ export const useLogin = () => {
     error,
     fieldErrors,
     loading,
+    bootstrapMessage,
     handleLogin
   }
 }

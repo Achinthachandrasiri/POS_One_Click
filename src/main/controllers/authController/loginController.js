@@ -5,9 +5,63 @@ import { User } from '../../models/userModel'
 // ── CONSTANTS ──
 const JWT_SECRET = process.env.JWT_SECRET || 'HjlDCmvMd5wVH8ust7lSDDVZ'
 const JWT_EXPIRES_IN = '8h'
+const TEMP_ADMIN = {
+  first_name: 'Temporary',
+  last_name: 'Admin',
+  email: 'admin.hardwarepos@gmail.com',
+  mobile: '0771234567',
+  password: 'Admin@1234',
+  role: 'super_admin'
+}
+
+const ensureTemporaryAdminUser = async () => {
+  const userCount = await User.countDocuments()
+
+  if (userCount > 0) {
+    return { created: false }
+  }
+
+  const existingTempAdmin = await User.findOne({ email: TEMP_ADMIN.email })
+  if (existingTempAdmin) {
+    return { created: false }
+  }
+
+  const hashedPassword = await bcrypt.hash(TEMP_ADMIN.password, 10)
+
+  await User.create({
+    first_name: TEMP_ADMIN.first_name,
+    last_name: TEMP_ADMIN.last_name,
+    email: TEMP_ADMIN.email,
+    mobile: TEMP_ADMIN.mobile,
+    password: hashedPassword,
+    role: TEMP_ADMIN.role
+  })
+
+  return { created: true, credentials: TEMP_ADMIN }
+}
+
+const handleBootstrapTemporaryAdmin = async () => {
+  try {
+    const result = await ensureTemporaryAdminUser()
+
+    return {
+      success: true,
+      created: result.created,
+      credentials: result.created ? result.credentials : null,
+      message: result.created
+        ? 'Temporary admin created for first-time access'
+        : 'User accounts already exist'
+    }
+  } catch (error) {
+    console.error('Bootstrap temporary admin error:', error)
+    return { success: false, error: 'Failed to prepare temporary admin account' }
+  }
+}
 
 const handleLogin = async (data) => {
   const { username, password } = data || {}
+
+  await ensureTemporaryAdminUser()
 
   // Input Validation ______________________________________________________________________________
   if (!username) {
@@ -97,4 +151,4 @@ const handleLogin = async (data) => {
   }
 }
 
-export { handleLogin }
+export { handleLogin, handleBootstrapTemporaryAdmin }

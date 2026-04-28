@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useLogin } from '../../hooks/useLogin'
 
 const LoginPage = () => {
-  const { username, setUsername, password, setPassword, error, fieldErrors, loading, handleLogin } =
+  const { username, setUsername, password, setPassword, error, fieldErrors, loading, bootstrapMessage, handleLogin } =
     useLogin()
 
   const [showPassword, setShowPassword] = useState(false)
@@ -20,6 +20,12 @@ const LoginPage = () => {
       {/* Card */}
       <div className="relative z-10 bg-white rounded-[4px] px-14 pt-12 pb-9 w-full max-w-[580px] h-[460px] shadow-[0_8px_40px_rgba(0,0,0,0.18)]">
         <form onSubmit={handleLogin}>
+          {bootstrapMessage && (
+            <div className="mb-4 rounded-[4px] border border-[#bfe3ea] bg-[#eef9fb] px-3 py-2 text-[13px] text-[#1a6b7a]">
+              {bootstrapMessage}
+            </div>
+          )}
+
           {/* Username */}
           <div className="mb-[10px]">
             <label className="text-[15px] text-[#222] mb-2 block">Username</label>
