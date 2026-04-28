@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('api', {
   auth: {
     login: (data) => ipcRenderer.invoke('auth:login', data),
+    bootstrapTempAdmin: () => ipcRenderer.invoke('auth:bootstrapTempAdmin'),
     sendOtp: (data) => ipcRenderer.invoke('auth:sendOtp', data),
     verifyOtp: (data) => ipcRenderer.invoke('auth:verifyOtp', data),
     changePassword: (data) => ipcRenderer.invoke('auth:changePassword', data)
@@ -21,6 +22,13 @@ contextBridge.exposeInMainWorld('api', {
     getById: (id) => ipcRenderer.invoke('customer:getById', id),
     update: (data) => ipcRenderer.invoke('customer:update', data),
     delete: (id) => ipcRenderer.invoke('customer:delete', id)
+  },
+  supplier: {
+    create: (data) => ipcRenderer.invoke('supplier:create', data),
+    getAll: () => ipcRenderer.invoke('supplier:getAll'),
+    getById: (id) => ipcRenderer.invoke('supplier:getById', id),
+    update: (data) => ipcRenderer.invoke('supplier:update', data),
+    delete: (id) => ipcRenderer.invoke('supplier:delete', id)
   }
 })
 

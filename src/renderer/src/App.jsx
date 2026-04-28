@@ -8,6 +8,9 @@ import ViewUser from './components/User/ViewUser'
 import CreateCustomer from './components/Customer/CreateCustomer'
 import EditCustomer from './components/Customer/EditCustomer'
 import ViewCustomer from './components/Customer/ViewCustomer'
+import CreateSupplier from './components/Supplier/CreateSupplier'
+import EditSupplier from './components/Supplier/EditSupplier'
+import ViewSupplier from './components/Supplier/ViewSupplier'
 
 function App() {
   return (
@@ -24,6 +27,9 @@ function App() {
         <Route path="customers" element={<ViewCustomer />} />
         <Route path="customers/create" element={<CreateCustomer />} />
         <Route path="customers/edit/:id" element={<EditCustomer />} />
+        <Route path="suppliers" element={<ViewSupplier />} />
+        <Route path="suppliers/create" element={<CreateSupplier />} />
+        <Route path="suppliers/edit/:id" element={<EditSupplier />} />
       </Route>
     </Routes>
   )
