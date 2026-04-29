@@ -9,13 +9,58 @@ import {
   FiChevronRight,
 } from "react-icons/fi"
 
+const TreeLines = ({ itemCount }) => {
+  const itemHeight = 40
+  const lineX = 12
+
+  return (
+    <svg
+      className="absolute left-0 top-0 pointer-events-none"
+      width={lineX + 24}
+      height={itemCount * itemHeight}
+      style={{ overflow: 'visible' }}
+    >
+      {/* Vertical trunk */}
+      <line
+        x1={lineX}
+        y1={0}
+        x2={lineX}
+        y2={(itemCount - 1) * itemHeight + 20}
+        stroke="#ffffff"
+        strokeWidth="1.5"
+      />
+
+      {/* Smooth cubic bezier curve branch for each item */}
+      {Array.from({ length: itemCount }).map((_, i) => {
+        const startY = i === 0 ? 0 : i * itemHeight
+        const endY = i * itemHeight + 20
+        const endX = lineX + 22
+
+        return (
+          <path
+            key={i}
+            // Start at trunk, curve down-then-right smoothly
+            d={`M ${lineX} ${startY} C ${lineX} ${endY}, ${lineX} ${endY}, ${endX} ${endY}`}
+            stroke="#ffffff"
+            strokeWidth="1.5"
+            fill="none"
+            strokeLinecap="round"
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
 const Sidebar = () => {
   const navigate = useNavigate()
   const [peopleOpen, setPeopleOpen] = useState(false)
 
-  const handleLogout = () => {
-    navigate('/')
-  }
+  const subItems = [
+    { label: 'Users', icon: <FiUser />, path: '/dashboard/users' },
+    { label: 'Customers', icon: <FiUserPlus />, path: '/dashboard/customers' },
+    { label: 'Suppliers', icon: <FiUsers />, path: '/dashboard/suppliers' },
+  ]
 
   return (
     <aside className="relative z-10 flex flex-col w-[260px] min-h-full bg-[#1a3d4d] shadow-[2px_0_12px_rgba(0,0,0,0.18)]">
@@ -53,30 +98,20 @@ const Sidebar = () => {
             </span>
           </button>
 
-          {/* Sub items */}
+          {/* Sub items with curved tree lines */}
           {peopleOpen && (
-            <div className="flex flex-col mt-1 ml-4 border-l border-[#ffffff25] pl-3 gap-1">
-              <button
-                onClick={() => navigate('/dashboard/users')}
-                className="flex items-center gap-3 px-3 py-2 text-[16px] text-[#ffffff] hover:text-white hover:bg-[#0e5a6a] rounded-md"
-              >
-                <FiUser />
-                <span>Users</span>
-              </button>
-              <button
-                onClick={() => navigate('/dashboard/customers')}
-                className="flex items-center gap-3 px-3 py-2 text-[16px] text-[#ffffff] hover:text-white hover:bg-[#0e5a6a] rounded-md"
-              >
-                <FiUserPlus />
-                <span>Customers</span>
-              </button>
-              <button
-                onClick={() => navigate('/dashboard/suppliers')}
-                className="flex items-center gap-3 px-3 py-2 text-[16px] text-[#ffffff] hover:text-white hover:bg-[#0e5a6a] rounded-md"
-              >
-                <FiUsers />
-                <span>Suppliers</span>
-              </button>
+            <div className="relative flex flex-col mt-1 ml-6 gap-0">
+              <TreeLines itemCount={subItems.length} />
+              {subItems.map((item, i) => (
+                <button
+                  key={i}
+                  onClick={() => navigate(item.path)}
+                  className="relative flex items-center gap-3 pl-9 pr-3 py-2.5 text-[15px] text-[#ffffff] hover:text-white hover:bg-[#0e5a6a] rounded-md text-left"
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -86,7 +121,7 @@ const Sidebar = () => {
       {/* Logout */}
       <div className="px-3 pb-6">
         <button
-          onClick={handleLogout}
+          onClick={() => navigate('/')}
           className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md w-full text-left"
         >
           <span>🚪</span>
