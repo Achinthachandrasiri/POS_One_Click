@@ -7,6 +7,7 @@ import CreateUser from './components/User/CreateUser'
 import ViewUser from './components/User/ViewUser'
 import CreateCustomer from './components/Customer/CreateCustomer'
 import EditCustomer from './components/Customer/EditCustomer'
+import EditUser from './components/User/EditUser'
 import ViewCustomer from './components/Customer/ViewCustomer'
 import CreateSupplier from './components/Supplier/CreateSupplier'
 import EditSupplier from './components/Supplier/EditSupplier'
@@ -24,6 +25,7 @@ function App() {
         <Route index element={<DashboardPage />} />
         <Route path="users/create" element={<CreateUser />} />
         <Route path="users" element={<ViewUser />} />
+        <Route path="users/edit/:id" element={<EditUser />} />
         <Route path="customers" element={<ViewCustomer />} />
         <Route path="customers/create" element={<CreateCustomer />} />
         <Route path="customers/edit/:id" element={<EditCustomer />} />

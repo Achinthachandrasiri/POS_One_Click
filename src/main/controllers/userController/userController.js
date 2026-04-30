@@ -4,17 +4,24 @@ import { User } from '../../models/userModel'
 // ── CONSTANTS ──
 const SALT_ROUNDS = 10
 
+// ── SERIALIZE HELPER ──
+const serializeUser = (user) => {
+  if (!user) return null
+  const plain = typeof user.toObject === 'function' ? user.toObject() : user
+  return {
+    ...plain,
+    _id: plain?._id?.toString ? plain._id.toString() : plain?._id,
+    createdAt: plain?.createdAt?.toString ? plain.createdAt.toString() : plain?.createdAt,
+    updatedAt: plain?.updatedAt?.toString ? plain.updatedAt.toString() : plain?.updatedAt
+  }
+}
+
 // ── VALIDATION HELPER ──
 const validateUserFields = ({ first_name, last_name, email, mobile, password, role }) => {
   const errors = {}
 
-  if (!first_name?.trim()) {
-    errors.first_name = 'First name is required'
-  }
-
-  if (!last_name?.trim()) {
-    errors.last_name = 'Last name is required'
-  }
+  if (!first_name?.trim()) errors.first_name = 'First name is required'
+  if (!last_name?.trim()) errors.last_name = 'Last name is required'
 
   if (!email?.trim()) {
     errors.email = 'Email is required'
@@ -77,15 +84,7 @@ export const handleCreateUser = async (data) => {
     return {
       success: true,
       message: 'User created successfully',
-      user: {
-        id: newUser._id,
-        first_name: newUser.first_name,
-        last_name: newUser.last_name,
-        email: newUser.email,
-        mobile: newUser.mobile,
-        role: newUser.role,
-        createdAt: newUser.createdAt
-      }
+      user: serializeUser(newUser)
     }
   } catch (error) {
     console.error('Create user error:', error)
@@ -111,7 +110,7 @@ export const handleGetAllUsers = async () => {
       .lean()
       .sort({ createdAt: -1 })
 
-    return { success: true, users }
+    return { success: true, users: users.map(serializeUser) }
   } catch (error) {
     console.error('Get all users error:', error)
     return { success: false, error: 'Failed to fetch users' }
@@ -120,6 +119,10 @@ export const handleGetAllUsers = async () => {
 
 // ── GET USER BY ID ──
 export const handleGetUserById = async (id) => {
+  if (!id) {
+    return { success: false, error: 'User ID is required' }
+  }
+
   try {
     const user = await User.findById(id, {
       password: 0,
@@ -131,7 +134,7 @@ export const handleGetUserById = async (id) => {
       return { success: false, error: 'User not found' }
     }
 
-    return { success: true, user }
+    return { success: true, user: serializeUser(user) }
   } catch (error) {
     console.error('Get user by id error:', error)
     return { success: false, error: 'Failed to fetch user' }
@@ -190,14 +193,7 @@ export const handleUpdateUser = async (data) => {
     return {
       success: true,
       message: 'User updated successfully',
-      user: {
-        id: updatedUser._id,
-        first_name: updatedUser.first_name,
-        last_name: updatedUser.last_name,
-        email: updatedUser.email,
-        mobile: updatedUser.mobile,
-        role: updatedUser.role
-      }
+      user: serializeUser(updatedUser)
     }
   } catch (error) {
     console.error('Update user error:', error)

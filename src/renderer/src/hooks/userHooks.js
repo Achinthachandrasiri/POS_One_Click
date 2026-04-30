@@ -10,13 +10,8 @@ const validateUser = (form, isUpdate = false) => {
   const password = form.password?.trim()
   const role = form.role?.trim()
 
-  if (!first_name) {
-    errors.first_name = 'First name is required'
-  }
-
-  if (!last_name) {
-    errors.last_name = 'Last name is required'
-  }
+  if (!first_name) errors.first_name = 'First name is required'
+  if (!last_name) errors.last_name = 'Last name is required'
 
   if (!email) {
     errors.email = 'Email is required'
@@ -77,17 +72,11 @@ export const useUserHooks = () => {
         password: form.password.trim(),
         role: form.role.trim()
       }
-
       const res = await window.api.user.create(payload)
-
       if (!res?.success) {
-        if (res?.fieldErrors) {
-          setFieldErrors(res.fieldErrors)
-        } else {
-          setError(res?.error || 'Failed to create user')
-        }
+        if (res?.fieldErrors) setFieldErrors(res.fieldErrors)
+        else setError(res?.error || 'Failed to create user')
       }
-
       return res
     } catch (err) {
       console.error(err)
@@ -119,17 +108,11 @@ export const useUserHooks = () => {
         mobile: form.mobile.trim(),
         role: form.role.trim()
       }
-
       const res = await window.api.user.update(payload)
-
       if (!res?.success) {
-        if (res?.fieldErrors) {
-          setFieldErrors(res.fieldErrors)
-        } else {
-          setError(res?.error || 'Failed to update user')
-        }
+        if (res?.fieldErrors) setFieldErrors(res.fieldErrors)
+        else setError(res?.error || 'Failed to update user')
       }
-
       return res
     } catch (err) {
       console.error(err)
@@ -145,7 +128,6 @@ export const useUserHooks = () => {
   const getUserById = async (id) => {
     setLoading(true)
     setError('')
-
     try {
       const res = await window.api.user.getById(id)
       if (!res?.success) {
@@ -166,7 +148,6 @@ export const useUserHooks = () => {
   const getAllUsers = async () => {
     setLoading(true)
     setError('')
-
     try {
       const res = await window.api.user.getAll()
       if (!res?.success) {
@@ -187,7 +168,6 @@ export const useUserHooks = () => {
   const deleteUser = async (id) => {
     setLoading(true)
     setError('')
-
     try {
       const res = await window.api.user.delete(id)
       if (!res?.success) {
@@ -208,7 +188,6 @@ export const useUserHooks = () => {
   const unlockUser = async (id) => {
     setLoading(true)
     setError('')
-
     try {
       const res = await window.api.user.unlock(id)
       if (!res?.success) {

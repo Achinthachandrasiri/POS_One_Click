@@ -10,8 +10,7 @@ const ViewUser = () => {
   const loadUsers = async () => {
     const res = await getAllUsers()
     if (res?.success) {
-      const normalized = (res.users || []).map((u) => u._doc ?? u)
-      setUsers(normalized)
+      setUsers(res.users || [])  // ✅ already plain objects from .lean()
     }
   }
 
