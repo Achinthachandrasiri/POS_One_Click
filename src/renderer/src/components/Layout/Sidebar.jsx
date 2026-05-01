@@ -7,6 +7,8 @@ import {
   FiUserPlus,
   FiChevronDown,
   FiChevronRight,
+  FiShoppingCart,
+  FiDollarSign
 } from "react-icons/fi"
 
 const TreeLines = ({ itemCount }) => {
@@ -115,6 +117,24 @@ const Sidebar = () => {
             </div>
           )}
         </div>
+
+        {/* Store */}
+        <button
+          onClick={() => navigate('/dashboard/stores')}
+          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+        >
+          <FiShoppingCart />
+          <span>Store</span>
+        </button>
+
+        {/* Expenses */}
+        <button
+          onClick={() => navigate('/dashboard/expenses')}
+          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+        >
+          <FiDollarSign />
+          <span>Expenses</span>
+        </button>
 
       </nav>
 
