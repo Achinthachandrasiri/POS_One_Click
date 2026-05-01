@@ -29,6 +29,13 @@ contextBridge.exposeInMainWorld('api', {
     getById: (id) => ipcRenderer.invoke('supplier:getById', id),
     update: (data) => ipcRenderer.invoke('supplier:update', data),
     delete: (id) => ipcRenderer.invoke('supplier:delete', id)
+  },
+  store: {
+    create: (data) => ipcRenderer.invoke('store:create', data),
+    getAll: () => ipcRenderer.invoke('store:getAll'),
+    getById: (id) => ipcRenderer.invoke('store:getById', id),
+    update: (data) => ipcRenderer.invoke('store:update', data),
+    delete: (id) => ipcRenderer.invoke('store:delete', id)
   }
 })
 

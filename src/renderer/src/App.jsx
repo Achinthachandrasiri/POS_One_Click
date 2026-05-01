@@ -12,6 +12,9 @@ import ViewCustomer from './components/Customer/ViewCustomer'
 import CreateSupplier from './components/Supplier/CreateSupplier'
 import EditSupplier from './components/Supplier/EditSupplier'
 import ViewSupplier from './components/Supplier/ViewSupplier'
+import CreateStore from './components/Store/CreateStore'
+import ViewStore from './components/Store/ViewStore'
+import EditStore from './components/Store/EditStore'
 
 function App() {
   return (
@@ -32,6 +35,9 @@ function App() {
         <Route path="suppliers" element={<ViewSupplier />} />
         <Route path="suppliers/create" element={<CreateSupplier />} />
         <Route path="suppliers/edit/:id" element={<EditSupplier />} />
+        <Route path="stores/create" element={<CreateStore />} />
+        <Route path="stores" element={<ViewStore />} />
+        <Route path="stores/edit/:id" element={<EditStore />} />
       </Route>
     </Routes>
   )
