@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUserHooks } from '../../hooks/userHooks'
 
@@ -6,11 +6,12 @@ const ViewUser = () => {
   const navigate = useNavigate()
   const { getAllUsers, deleteUser, loading, error } = useUserHooks()
   const [users, setUsers] = useState([])
+  const [search, setSearch] = useState('')
 
   const loadUsers = async () => {
     const res = await getAllUsers()
     if (res?.success) {
-      setUsers(res.users || [])  // ✅ already plain objects from .lean()
+      setUsers(res.users || [])
     }
   }
 
@@ -27,6 +28,16 @@ const ViewUser = () => {
       setUsers((prev) => prev.filter((u) => u._id !== id))
     }
   }
+
+  const filteredUsers = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return users
+    return users.filter((u) =>
+      `${u.first_name} ${u.last_name} ${u.email} ${u.mobile} ${u.role}`
+        .toLowerCase()
+        .includes(q)
+    )
+  }, [search, users])
 
   return (
     <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
@@ -50,14 +61,21 @@ const ViewUser = () => {
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-[#1a6b7a]">Users</h2>
-              <p className="text-xs text-gray-500">Manage user records</p>
+              <div className="flex mt-4 gap-2">
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="border-2 border-gray-400 rounded focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
+                />
+              </div>
             </div>
 
             <div className="flex justify-end mt-4 gap-2">
               <button
                 onClick={() => navigate('/dashboard/users/create')}
-                className="bg-[#2699aa] text-white text-md px-6 py-3 rounded hover:opacity-90"
+                className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded hover:opacity-90"
               >
                 + Create User
               </button>
@@ -84,14 +102,14 @@ const ViewUser = () => {
               </thead>
 
               <tbody>
-                {users.length === 0 && !loading ? (
+                {filteredUsers.length === 0 && !loading ? (
                   <tr>
                     <td colSpan={6} className="text-center py-6 text-gray-500 text-xs">
-                      No users found
+                      {search ? 'No users match your search' : 'No users found'}
                     </td>
                   </tr>
                 ) : (
-                  users.map((user) => (
+                  filteredUsers.map((user) => (
                     <tr key={user._id} className="border-b hover:bg-gray-50">
                       <td className="px-3 py-2">{user.first_name}</td>
                       <td className="px-3 py-2">{user.last_name}</td>

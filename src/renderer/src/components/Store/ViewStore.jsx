@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStoreHooks } from '../../hooks/storeHooks'
 
@@ -6,6 +6,7 @@ const ViewStore = () => {
   const navigate = useNavigate()
   const { getAllStores, deleteStore, loading, error } = useStoreHooks()
   const [stores, setStores] = useState([])
+  const [search, setSearch] = useState('')
 
   const loadStores = async () => {
     const res = await getAllStores()
@@ -27,6 +28,16 @@ const ViewStore = () => {
       setStores((prev) => prev.filter((s) => s._id !== id))
     }
   }
+
+  const filteredStores = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return stores
+    return stores.filter((s) =>
+      `${s.name} ${s.store_key} ${s.is_active ? 'active' : 'inactive'}`
+        .toLowerCase()
+        .includes(q)
+    )
+  }, [search, stores])
 
   return (
     <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
@@ -50,19 +61,22 @@ const ViewStore = () => {
 
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-[#1a6b7a]">
-                Stores
-              </h2>
-              <p className="text-xs text-gray-500">
-                Manage store records
-              </p>
+             <div>
+              <div className="flex mt-4 gap-2">
+                <input
+                  type="text"
+                  placeholder="Search stores..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="border-2 border-gray-400 rounded focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
+                />
+              </div>
             </div>
 
             <div className="flex gap-2">
               <button
                 onClick={() => navigate('/dashboard/stores/create')}
-                className="bg-[#2699aa] text-white text-md px-6 py-3 rounded hover:opacity-90"
+                className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded hover:opacity-90"
               >
                 + Create Store
               </button>
@@ -87,14 +101,14 @@ const ViewStore = () => {
               </thead>
 
               <tbody>
-                {stores.length === 0 && !loading ? (
+                {filteredStores.length === 0 && !loading ? (
                   <tr>
                     <td colSpan={4} className="text-center py-6 text-gray-500 text-xs">
-                      No stores found
+                      {search ? 'No stores match your search' : 'No stores found'}
                     </td>
                   </tr>
                 ) : (
-                  stores.map((store) => (
+                  filteredStores.map((store) => (
                     <tr key={store._id} className="border-b hover:bg-gray-50">
                       <td className="px-3 py-2">{store.name}</td>
                       <td className="px-3 py-2">{store.store_key}</td>

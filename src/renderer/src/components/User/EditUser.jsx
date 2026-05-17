@@ -1,20 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useUserHooks } from '../../hooks/userHooks'
 
 const EditUser = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const {
-    loading,
-    error,
-    fieldErrors,
-    setError,
-    setFieldErrors,
-    getUserById,
-    updateUser
-  } = useUserHooks()
-
+  const {loading, error, fieldErrors, setError, handleChange, getUserById, updateUser } = useUserHooks()
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
@@ -24,11 +15,11 @@ const EditUser = () => {
   })
   const [success, setSuccess] = useState('')
 
+  const onChange = useCallback(handleChange(setForm), [handleChange])
+
   useEffect(() => {
     const loadUser = async () => {
-      console.log('ID from params:', id)                    // check if id exists
       const res = await getUserById(id)
-      console.log('getUserById response:', res)             // check what comes back
       if (res?.success && res.user) {
         setForm({
           first_name: res.user.first_name || '',
@@ -40,15 +31,7 @@ const EditUser = () => {
       }
     }
     loadUser()
-  }, [id])
-
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-    setFieldErrors((prev) => ({ ...prev, [name]: '' }))
-    setError('')
-    setSuccess('')
-  }
+  }, [id, getUserById])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -93,7 +76,7 @@ const EditUser = () => {
                   type="text"
                   name="first_name"
                   value={form.first_name}
-                  onChange={handleChange}
+                  onChange={onChange}
                   placeholder="John"
                   className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
                 />
@@ -107,7 +90,7 @@ const EditUser = () => {
                   type="text"
                   name="last_name"
                   value={form.last_name}
-                  onChange={handleChange}
+                  onChange={onChange}
                   placeholder="Doe"
                   className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
                 />
@@ -125,7 +108,7 @@ const EditUser = () => {
                   type="text"
                   name="email"
                   value={form.email}
-                  onChange={handleChange}
+                  onChange={onChange}
                   placeholder="john@gmail.com"
                   className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
                 />
@@ -136,10 +119,12 @@ const EditUser = () => {
               <div className="flex-1">
                 <label className="text-sm text-gray-700">Mobile Number</label>
                 <input
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   name="mobile"
                   value={form.mobile}
-                  onChange={handleChange}
+                  onChange={onChange}
                   placeholder="0771234567"
                   maxLength={10}
                   className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
@@ -150,14 +135,14 @@ const EditUser = () => {
               </div>
             </div>
 
-            {/* Row 3 — Role & empty */}
+            {/* Row 3 — Role */}
             <div className="flex gap-6">
               <div className="flex-1">
                 <label className="text-sm text-gray-700">Role</label>
                 <select
                   name="role"
                   value={form.role}
-                  onChange={handleChange}
+                  onChange={onChange}
                   className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent text-gray-700"
                 >
                   <option value="">Select a role</option>
