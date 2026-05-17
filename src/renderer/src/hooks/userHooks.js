@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 
 const validateUser = (form, isUpdate = false) => {
   const errors = {}
@@ -21,8 +21,11 @@ const validateUser = (form, isUpdate = false) => {
 
   if (!mobile) {
     errors.mobile = 'Mobile number is required'
-  } else if (!/^0\d{9}$/.test(mobile)) {
-    errors.mobile = 'Mobile must be 10 digits and start with 0'
+  } else {
+    const cleanedMobile = mobile.replace(/\s+/g, '')
+    if (!/^0\d{9}$/.test(cleanedMobile)) {
+      errors.mobile = 'Mobile must be exactly 10 digits, start with 0 (e.g. 0771234567)'
+    }
   }
 
   if (!isUpdate) {
@@ -47,13 +50,26 @@ export const useUserHooks = () => {
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
 
-  const resetMessages = () => {
+  const resetMessages = useCallback(() => {
     setError('')
     setFieldErrors({})
-  }
+  }, [])
+
+  // Reusable stable handleChange
+  const handleChange = useCallback((setForm) => (e) => {
+    const { name, value } = e.target
+    let finalValue = value
+
+    if (name === 'mobile') {
+      finalValue = value.replace(/[^0-9]/g, '').slice(0, 10)
+    }
+
+    setForm((prev) => ({ ...prev, [name]: finalValue }))
+    setFieldErrors((prev) => ({ ...prev, [name]: '' }))
+  }, [])
 
   // ── CREATE USER ──
-  const createUser = async (form) => {
+  const createUser = useCallback(async (form) => {
     resetMessages()
     const errors = validateUser(form, false)
 
@@ -86,10 +102,10 @@ export const useUserHooks = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [resetMessages])
 
   // ── UPDATE USER ──
-  const updateUser = async (id, form) => {
+  const updateUser = useCallback(async (id, form) => {
     resetMessages()
     const errors = validateUser(form, true)
 
@@ -122,10 +138,10 @@ export const useUserHooks = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [resetMessages])
 
   // ── GET USER BY ID ──
-  const getUserById = async (id) => {
+  const getUserById = useCallback(async (id) => {
     setLoading(true)
     setError('')
     try {
@@ -142,10 +158,10 @@ export const useUserHooks = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   // ── GET ALL USERS ──
-  const getAllUsers = async () => {
+  const getAllUsers = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
@@ -162,10 +178,10 @@ export const useUserHooks = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   // ── DELETE USER ──
-  const deleteUser = async (id) => {
+  const deleteUser = useCallback(async (id) => {
     setLoading(true)
     setError('')
     try {
@@ -182,10 +198,10 @@ export const useUserHooks = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   // ── UNLOCK USER ──
-  const unlockUser = async (id) => {
+  const unlockUser = useCallback(async (id) => {
     setLoading(true)
     setError('')
     try {
@@ -202,7 +218,7 @@ export const useUserHooks = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   return {
     loading,
@@ -210,11 +226,13 @@ export const useUserHooks = () => {
     fieldErrors,
     setFieldErrors,
     setError,
+    handleChange,
     createUser,
     updateUser,
     getUserById,
     getAllUsers,
     deleteUser,
-    unlockUser
+    unlockUser,
+    resetMessages
   }
 }
