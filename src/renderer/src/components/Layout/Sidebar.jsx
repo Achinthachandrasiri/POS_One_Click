@@ -8,7 +8,12 @@ import {
   FiChevronDown,
   FiChevronRight,
   FiShoppingCart,
-  FiDollarSign
+  FiDollarSign,
+  FiBox,
+  FiTag,
+  FiGrid,
+  FiSliders,
+  FiPackage
 } from "react-icons/fi"
 
 const TreeLines = ({ itemCount }) => {
@@ -22,27 +27,26 @@ const TreeLines = ({ itemCount }) => {
       height={itemCount * itemHeight}
       style={{ overflow: 'visible' }}
     >
-      {/* Vertical trunk */}
+      {/* Vertical trunk — runs down to just before last item curve */}
       <line
         x1={lineX}
         y1={0}
         x2={lineX}
-        y2={(itemCount - 1) * itemHeight + 20}
+        y2={(itemCount - 1) * itemHeight + 12}
         stroke="#ffffff"
         strokeWidth="1.5"
+        strokeLinecap="round"
       />
 
-      {/* Smooth cubic bezier curve branch for each item */}
+      {/* Curved L-branch per item: drops down trunk then sweeps right */}
       {Array.from({ length: itemCount }).map((_, i) => {
-        const startY = i === 0 ? 0 : i * itemHeight
-        const endY = i * itemHeight + 20
+        const branchY = i * itemHeight + 20
+        const curveStart = branchY - 8
         const endX = lineX + 22
-
         return (
           <path
             key={i}
-            // Start at trunk, curve down-then-right smoothly
-            d={`M ${lineX} ${startY} C ${lineX} ${endY}, ${lineX} ${endY}, ${endX} ${endY}`}
+            d={`M ${lineX} ${curveStart} Q ${lineX} ${branchY} ${endX} ${branchY}`}
             stroke="#ffffff"
             strokeWidth="1.5"
             fill="none"
@@ -57,11 +61,20 @@ const TreeLines = ({ itemCount }) => {
 const Sidebar = () => {
   const navigate = useNavigate()
   const [peopleOpen, setPeopleOpen] = useState(false)
+  const [productsOpen, setProductsOpen] = useState(false)
 
   const subItems = [
     { label: 'Users', icon: <FiUser />, path: '/dashboard/users' },
     { label: 'Customers', icon: <FiUserPlus />, path: '/dashboard/customers' },
     { label: 'Suppliers', icon: <FiUsers />, path: '/dashboard/suppliers' },
+  ]
+
+  const productSubItems = [
+    { label: 'Brand', icon: <FiTag />, path: '/dashboard/products/brands' },
+    { label: 'Category', icon: <FiGrid />, path: '/dashboard/products/categories' },
+    { label: 'Variation', icon: <FiSliders />, path: '/dashboard/products/variations' },
+    { label: 'Unit', icon: <FiPackage />, path: '/dashboard/products/units' },
+    {label: 'Products', icon: <FiBox />, path: '/dashboard/products'}
   ]
 
   return (
@@ -105,6 +118,39 @@ const Sidebar = () => {
             <div className="relative flex flex-col mt-1 ml-6 gap-0">
               <TreeLines itemCount={subItems.length} />
               {subItems.map((item, i) => (
+                <button
+                  key={i}
+                  onClick={() => navigate(item.path)}
+                  className="relative flex items-center gap-3 pl-9 pr-3 py-2.5 text-[15px] text-[#ffffff] hover:text-white hover:bg-[#0e5a6a] rounded-md text-left"
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Products — expandable */}
+        <div>
+          <button
+            onClick={() => setProductsOpen(!productsOpen)}
+            className="flex items-center justify-between w-full px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+          >
+            <div className="flex items-center gap-3">
+              <FiBox />
+              <span>Products</span>
+            </div>
+            <span className="text-md">
+              {productsOpen ? <FiChevronDown /> : <FiChevronRight />}
+            </span>
+          </button>
+
+          {/* Product sub items with curved tree lines */}
+          {productsOpen && (
+            <div className="relative flex flex-col mt-1 ml-6 gap-0">
+              <TreeLines itemCount={productSubItems.length} />
+              {productSubItems.map((item, i) => (
                 <button
                   key={i}
                   onClick={() => navigate(item.path)}
