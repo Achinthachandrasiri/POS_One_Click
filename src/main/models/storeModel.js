@@ -11,7 +11,7 @@ const storeSchema = new mongoose.Schema(
 
     store_key: {
       type: String,
-      required: [true, 'Store key is required'],   
+      required: [true, 'Store key is required'],
       unique: true,
       trim: true
     },
