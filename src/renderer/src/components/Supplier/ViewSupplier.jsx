@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSupplierHooks } from '../../hooks/supplierHooks'
 
@@ -6,6 +6,7 @@ const ViewSupplier = () => {
   const navigate = useNavigate()
   const { getAllSuppliers, deleteSupplier, loading, error } = useSupplierHooks()
   const [suppliers, setSuppliers] = useState([])
+  const [search, setSearch] = useState('')
 
   const loadSuppliers = async () => {
     const res = await getAllSuppliers()
@@ -28,6 +29,16 @@ const ViewSupplier = () => {
     }
   }
 
+  const filteredSuppliers = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return suppliers
+    return suppliers.filter((s) =>
+      `${s.name} ${s.mobileNumber} ${s.nicNumber} ${s.address}`
+        .toLowerCase()
+        .includes(q)
+    )
+  }, [search, suppliers])
+
   return (
     <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
       <div className="flex flex-col h-[630px]">
@@ -49,6 +60,7 @@ const ViewSupplier = () => {
                 <input
                   type="text"
                   placeholder="Search suppliers..."
+                  value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="border-2 border-gray-400 rounded focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
                 />
@@ -82,14 +94,14 @@ const ViewSupplier = () => {
               </thead>
 
               <tbody>
-                {suppliers.length === 0 && !loading ? (
+                {filteredSuppliers.length === 0 && !loading ? (
                   <tr>
                     <td colSpan={5} className="text-center py-6 text-gray-500 text-xs">
-                      No suppliers found
+                      {search ? 'No suppliers match your search' : 'No suppliers found'}
                     </td>
                   </tr>
                 ) : (
-                  suppliers.map((supplier) => (
+                  filteredSuppliers.map((supplier) => (
                     <tr key={supplier._id} className="border-b hover:bg-gray-50">
                       <td className="px-3 py-2">{supplier.name}</td>
                       <td className="px-3 py-2">{supplier.mobileNumber}</td>

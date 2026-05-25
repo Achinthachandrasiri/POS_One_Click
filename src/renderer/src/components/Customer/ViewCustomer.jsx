@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCustomerHooks } from '../../hooks/customerHooks'
 
@@ -6,6 +6,7 @@ const ViewCustomer = () => {
   const navigate = useNavigate()
   const { getAllCustomers, deleteCustomer, loading, error } = useCustomerHooks()
   const [customers, setCustomers] = useState([])
+  const [search, setSearch] = useState('')
 
   const loadCustomers = async () => {
     const res = await getAllCustomers()
@@ -27,6 +28,16 @@ const ViewCustomer = () => {
       setCustomers((prev) => prev.filter((c) => c._id !== id))
     }
   }
+
+  const filteredCustomers = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return customers
+    return customers.filter((c) =>
+      `${c.name} ${c.mobileNumber} ${c.nicNumber} ${c.address}`
+        .toLowerCase()
+        .includes(q)
+    )
+  }, [search, customers])
 
   return (
     <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
@@ -51,14 +62,15 @@ const ViewCustomer = () => {
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
             <div>
-              <div className="flex  mt-4 gap-2">
-                <input
-                  type="text"
-                  placeholder="Search customers..."
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="border-2 border-gray-400 rounded focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
-                />
-              </div>
+                  <div className="flex  mt-4 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Search customers..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="border-2 border-gray-400 rounded focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
+                    />
+                  </div>
             </div>
 
             <div className="flex gap-2">
@@ -92,14 +104,14 @@ const ViewCustomer = () => {
               </thead>
 
               <tbody>
-                {customers.length === 0 && !loading ? (
+                {filteredCustomers.length === 0 && !loading ? (
                   <tr>
                     <td colSpan={5} className="text-center py-6 text-gray-500 text-xs">
-                      No customers found
+                      {search ? 'No customers match your search' : 'No customers found'}
                     </td>
                   </tr>
                 ) : (
-                  customers.map((customer) => (
+                  filteredCustomers.map((customer) => (
                     <tr key={customer._id} className="border-b hover:bg-gray-50">
                       <td className="px-3 py-2">{customer.name}</td>
                       <td className="px-3 py-2">{customer.mobileNumber}</td>
