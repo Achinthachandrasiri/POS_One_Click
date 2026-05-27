@@ -4,6 +4,8 @@ import { registerResetPasswordIpc } from './auth/resetPassword.ipc'
 import { registerCustomerIpc } from './customer/customer.ipc'
 import { registerSupplierIpc } from './supplier/supplier.ipc'
 import { registerStoreIpc } from './store/store.ipc'
+import { registerBrandIpc } from './product/brand.ipc'
+import { registerCategoryIpc } from './product/category.ipc'
 
 export const registerIpcHandlers = () => {
   registerAuthIpc()
@@ -12,4 +14,6 @@ export const registerIpcHandlers = () => {
   registerCustomerIpc()
   registerSupplierIpc()
   registerStoreIpc()
+  registerBrandIpc()
+  registerCategoryIpc()
 }

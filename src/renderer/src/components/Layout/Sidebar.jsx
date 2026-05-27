@@ -74,7 +74,7 @@ const Sidebar = () => {
     { label: 'Category', icon: <FiGrid />, path: '/dashboard/products/categories' },
     { label: 'Variation', icon: <FiSliders />, path: '/dashboard/products/variations' },
     { label: 'Unit', icon: <FiPackage />, path: '/dashboard/products/units' },
-    {label: 'Products', icon: <FiBox />, path: '/dashboard/products'}
+    { label: 'Products', icon: <FiBox />, path: '/dashboard/products' }
   ]
 
   return (

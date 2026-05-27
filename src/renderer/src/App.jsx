@@ -15,6 +15,12 @@ import ViewSupplier from './components/Supplier/ViewSupplier'
 import CreateStore from './components/Store/CreateStore'
 import ViewStore from './components/Store/ViewStore'
 import EditStore from './components/Store/EditStore'
+import CreateBrand from './components/Brand/CreateBrand'
+import ViewBrands from './components/Brand/ViewBrands'
+import EditBrand from './components/Brand/EditBrand'
+import CreateCategory from './components/Category/CreateCategory'
+import ViewCategory from './components/Category/ViewCategory'
+import EditCategory from './components/Category/EditCategory'
 
 function App() {
   return (
@@ -38,6 +44,12 @@ function App() {
         <Route path="stores/create" element={<CreateStore />} />
         <Route path="stores" element={<ViewStore />} />
         <Route path="stores/edit/:id" element={<EditStore />} />
+        <Route path="products/brands" element={<ViewBrands />} />
+        <Route path="products/brands/create" element={<CreateBrand />} />
+        <Route path="products/brands/edit/:id" element={<EditBrand />} />
+        <Route path="products/categories" element={<ViewCategory />} />
+        <Route path="products/categories/create" element={<CreateCategory />} />
+        <Route path="products/categories/edit/:id" element={<EditCategory />} />
       </Route>
     </Routes>
   )
