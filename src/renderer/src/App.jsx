@@ -21,6 +21,12 @@ import EditBrand from './components/Brand/EditBrand'
 import CreateCategory from './components/Category/CreateCategory'
 import ViewCategory from './components/Category/ViewCategory'
 import EditCategory from './components/Category/EditCategory'
+import ViewVariations from './components/Variation/ViewVariations'
+import CreateVariation from './components/Variation/CreateVariation'
+import EditVariation from './components/Variation/EditVariation'
+import ViewUnits from './components/Unit/ViewUnits'
+import CreateUnit from './components/Unit/CreateUnit'
+import EditUnit from './components/Unit/EditUnit'
 
 function App() {
   return (
@@ -50,6 +56,12 @@ function App() {
         <Route path="products/categories" element={<ViewCategory />} />
         <Route path="products/categories/create" element={<CreateCategory />} />
         <Route path="products/categories/edit/:id" element={<EditCategory />} />
+        <Route path="products/variations" element={<ViewVariations />} />
+        <Route path="products/variations/create" element={<CreateVariation />} />
+        <Route path="products/variations/edit/:id" element={<EditVariation />} />
+        <Route path="products/units" element={<ViewUnits />} />
+        <Route path="products/units/create" element={<CreateUnit />} />
+        <Route path="products/units/edit/:id" element={<EditUnit />} />
       </Route>
     </Routes>
   )
