@@ -51,6 +51,21 @@ contextBridge.exposeInMainWorld('api', {
     update: (data) => ipcRenderer.invoke('category:update', data),
     delete: (id) => ipcRenderer.invoke('category:delete', id)
   }
+  ,
+  variation: {
+    create: (data) => ipcRenderer.invoke('variation:create', data),
+    getAll: () => ipcRenderer.invoke('variation:getAll'),
+    getById: (id) => ipcRenderer.invoke('variation:getById', id),
+    update: (data) => ipcRenderer.invoke('variation:update', data),
+    delete: (id) => ipcRenderer.invoke('variation:delete', id)
+  },
+  unit: {
+    create: (data) => ipcRenderer.invoke('unit:create', data),
+    getAll: () => ipcRenderer.invoke('unit:getAll'),
+    getById: (id) => ipcRenderer.invoke('unit:getById', id),
+    update: (data) => ipcRenderer.invoke('unit:update', data),
+    delete: (id) => ipcRenderer.invoke('unit:delete', id)
+  }
 })
 
 contextBridge.exposeInMainWorld('electronAPI', {
