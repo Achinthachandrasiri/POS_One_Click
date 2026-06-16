@@ -8,6 +8,7 @@ import { registerBrandIpc } from './product/brand.ipc'
 import { registerCategoryIpc } from './product/category.ipc'
 import { registerVariationIpc } from './product/variation.ipc'
 import { registerUnitIpc } from './product/unit.ipc'
+import { registerProductIpc } from './product/product.ipc'
 
 export const registerIpcHandlers = () => {
   registerAuthIpc()
@@ -20,4 +21,5 @@ export const registerIpcHandlers = () => {
   registerCategoryIpc()
   registerVariationIpc()
   registerUnitIpc()
+  registerProductIpc()
 }

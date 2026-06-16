@@ -69,7 +69,7 @@ const ViewCategory = () => {
                   placeholder="Search categories..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="border-2 border-gray-400 rounded focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
+                  className="border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
                 />
               </div>
             </div>
@@ -77,7 +77,7 @@ const ViewCategory = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => navigate('/dashboard/products/categories/create')}
-                className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded hover:opacity-90"
+                className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded-lg hover:opacity-90"
               >
                 + Create Category
               </button>
