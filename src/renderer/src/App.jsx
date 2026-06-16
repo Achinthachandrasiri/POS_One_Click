@@ -27,6 +27,9 @@ import EditVariation from './components/Variation/EditVariation'
 import ViewUnits from './components/Unit/ViewUnits'
 import CreateUnit from './components/Unit/CreateUnit'
 import EditUnit from './components/Unit/EditUnit'
+import ViewProduct from './components/Product/ViewProduct'
+import CreateProduct from './components/Product/CreateProduct'
+import EditProduct from './components/Product/EditProduct'
 
 function App() {
   return (
@@ -62,6 +65,9 @@ function App() {
         <Route path="products/units" element={<ViewUnits />} />
         <Route path="products/units/create" element={<CreateUnit />} />
         <Route path="products/units/edit/:id" element={<EditUnit />} />
+        <Route path="products" element={<ViewProduct />} />
+        <Route path="products/create" element={<CreateProduct />} />
+        <Route path="products/edit/:id" element={<EditProduct />} />
       </Route>
     </Routes>
   )

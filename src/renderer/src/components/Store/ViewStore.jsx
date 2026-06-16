@@ -61,14 +61,14 @@ const ViewStore = () => {
 
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
-             <div>
+            <div>
               <div className="flex mt-4 gap-2">
                 <input
                   type="text"
                   placeholder="Search stores..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="border-2 border-gray-400 rounded focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
+                  className="border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
                 />
               </div>
             </div>
@@ -76,7 +76,7 @@ const ViewStore = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => navigate('/dashboard/stores/create')}
-                className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded hover:opacity-90"
+                className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded-lg hover:opacity-90"
               >
                 + Create Store
               </button>
@@ -114,11 +114,10 @@ const ViewStore = () => {
                       <td className="px-3 py-2">{store.store_key}</td>
 
                       <td className="px-3 py-2">
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          store.is_active
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}>
+                        <span className={`text-xs px-2 py-1 rounded ${store.is_active
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                          }`}>
                           {store.is_active ? 'Active' : 'Inactive'}
                         </span>
                       </td>
