@@ -30,6 +30,8 @@ import EditUnit from './components/Unit/EditUnit'
 import ViewProduct from './components/Product/ViewProduct'
 import CreateProduct from './components/Product/CreateProduct'
 import EditProduct from './components/Product/EditProduct'
+import GeneralSettings from './components/Settings/GeneralSettings'
+import MailSettings from './components/Settings/MailSettings'
 
 function App() {
   return (
@@ -68,6 +70,8 @@ function App() {
         <Route path="products" element={<ViewProduct />} />
         <Route path="products/create" element={<CreateProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
+        <Route path="settings/general" element={<GeneralSettings />} />
+        <Route path="settings/mail" element={<MailSettings />} />
       </Route>
     </Routes>
   )
