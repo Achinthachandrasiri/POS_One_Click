@@ -73,6 +73,12 @@ contextBridge.exposeInMainWorld('api', {
     update: (data) => ipcRenderer.invoke('product:update', data),
     delete: (id) => ipcRenderer.invoke('product:delete', id),
     updateStatus: (data) => ipcRenderer.invoke('product:updateStatus', data)
+  },
+  settings: {
+    getGeneral: () => ipcRenderer.invoke('settings:getGeneral'),
+    saveGeneral: (data) => ipcRenderer.invoke('settings:saveGeneral', data),
+    getMail: () => ipcRenderer.invoke('settings:getMail'),
+    saveMail: (data) => ipcRenderer.invoke('settings:saveMail', data),
   }
 })
 

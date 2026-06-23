@@ -9,6 +9,8 @@ import { registerCategoryIpc } from './product/category.ipc'
 import { registerVariationIpc } from './product/variation.ipc'
 import { registerUnitIpc } from './product/unit.ipc'
 import { registerProductIpc } from './product/product.ipc'
+import { registerGeneralSettingsIpc } from './settings/generalSettings.ipc'
+import { registerMailSettingsIpc } from './settings/mailSettings.ipc'
 
 export const registerIpcHandlers = () => {
   registerAuthIpc()
@@ -22,4 +24,6 @@ export const registerIpcHandlers = () => {
   registerVariationIpc()
   registerUnitIpc()
   registerProductIpc()
+  registerGeneralSettingsIpc()
+  registerMailSettingsIpc()
 }
