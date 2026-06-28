@@ -993,6 +993,11 @@ const CreateProduct = () => {
     const res = await createProduct(payload)
     if (res?.success) {
       navigate('/dashboard/products')
+    } else if (res?.fieldErrors) {
+      setFieldErrors(res.fieldErrors)
+      setError(res.error || 'Please fix the highlighted fields and try again.')
+    } else if (res?.error) {
+      setError(res.error)
     }
   }
 

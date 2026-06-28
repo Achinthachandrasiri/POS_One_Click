@@ -1055,310 +1055,315 @@ const EditProduct = () => {
     const res = await updateProduct(payload)
     if (res?.success) {
       navigate('/dashboard/products')
-    }
+    } else if (res?.fieldErrors) {
+      setFieldErrors(res.fieldErrors)
+      setError(res.error || 'Please fix the highlighted fields and try again.')
+    } else if (res?.error) {
+      setError(res.error)
   }
+}
 
-  const isSingle = form.structure === 'single'
+const isSingle = form.structure === 'single'
 
-  // ── Loading / Error states ──
-  if (fetchLoading) {
-    return (
-      <div className="flex items-center justify-center h-[500px]">
-        <p className="text-gray-400 text-sm">Loading product…</p>
-      </div>
-    )
-  }
-
-  if (fetchError) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[500px] gap-3">
-        <p className="text-red-500 text-sm">{fetchError}</p>
-        <button
-          onClick={() => navigate('/dashboard/products')}
-          className="bg-[#1a6b7a] text-white text-sm px-4 py-2 rounded-lg hover:opacity-90"
-        >
-          Back to Products
-        </button>
-      </div>
-    )
-  }
-
+// ── Loading / Error states ──
+if (fetchLoading) {
   return (
-    <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
-      <div className="flex flex-col h-[650px]">
+    <div className="flex items-center justify-center h-[500px]">
+      <p className="text-gray-400 text-sm">Loading product…</p>
+    </div>
+  )
+}
 
-        {/* Background decoration */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute w-[880px] h-[780px] bg-[#2699aa] opacity-40 rounded-full right-[-200px] bottom-[-200px]" />
-          <div className="absolute w-[580px] h-[580px] bg-[#30aabb] opacity-25 rounded-full right-[-120px] bottom-[-120px]" />
-          <div className="absolute w-[420px] h-[420px] bg-[#2699aa] opacity-30 rounded-full left-[-80px] top-[-80px]" />
-        </div>
+if (fetchError) {
+  return (
+    <div className="flex flex-col items-center justify-center h-[500px] gap-3">
+      <p className="text-red-500 text-sm">{fetchError}</p>
+      <button
+        onClick={() => navigate('/dashboard/products')}
+        className="bg-[#1a6b7a] text-white text-sm px-4 py-2 rounded-lg hover:opacity-90"
+      >
+        Back to Products
+      </button>
+    </div>
+  )
+}
 
-        {/* Page header */}
-        <div className="relative z-10 mb-5">
-          <h1 className="text-white text-[22px] font-bold m-0 flex items-center gap-2">
-            <i className="fas fa-box-open text-[20px]" /> Edit Product
-          </h1>
-          <p className="text-[#90bcc4] text-[15px] mt-1">Update product details and variations.</p>
-        </div>
+return (
+  <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
+    <div className="flex flex-col h-[650px]">
 
-        {/* Card */}
-        <div
-          className="relative z-10 bg-[#f0f4f6] w-full px-6 py-6 shadow-xl rounded-t-[20px] overflow-auto"
-          style={{ height: 'calc(100% - 70px)' }}
-        >
-          {/* Global error banner */}
-          {error && (
-            <div className="mb-5 bg-red-50 border-2 border-red-400 text-red-700 text-sm font-medium px-4 py-3 rounded-xl flex items-start gap-2">
-              <i className="fas fa-exclamation-triangle mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
+      {/* Background decoration */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute w-[880px] h-[780px] bg-[#2699aa] opacity-40 rounded-full right-[-200px] bottom-[-200px]" />
+        <div className="absolute w-[580px] h-[580px] bg-[#30aabb] opacity-25 rounded-full right-[-120px] bottom-[-120px]" />
+        <div className="absolute w-[420px] h-[420px] bg-[#2699aa] opacity-30 rounded-full left-[-80px] top-[-80px]" />
+      </div>
 
-          {/* ── General details ── */}
-          <Section title="General details" icon="tag">
-            <div className="grid grid-cols-3 mt-4 gap-4">
-              <Field label="Product name" required error={fieldErrors.name}>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => updateForm('name', e.target.value)}
-                  placeholder="e.g. White Rice 5kg"
-                  className={inputCls(fieldErrors.name)}
-                />
-              </Field>
-              <Field label="Product code" required error={fieldErrors.code}>
-                <input
-                  type="text"
-                  value={form.code}
-                  onChange={(e) => updateForm('code', e.target.value)}
-                  placeholder="e.g. PRD-001"
-                  className={inputCls(fieldErrors.code)}
-                />
-              </Field>
-              <Field label="Store" required error={fieldErrors.store_id}>
-                <select value={form.store_id} onChange={(e) => updateForm('store_id', e.target.value)} className={selectCls(fieldErrors.store_id)}>
-                  <option value="">Select store</option>
-                  {dropdowns.stores.map((s) => <option key={s._id} value={s._id}>{s.storeName || s.name}</option>)}
-                </select>
-              </Field>
-              <Field label="Brand" required error={fieldErrors.brand_id}>
-                <select value={form.brand_id} onChange={(e) => updateForm('brand_id', e.target.value)} className={selectCls(fieldErrors.brand_id)}>
-                  <option value="">Select brand</option>
-                  {dropdowns.brands.map((b) => <option key={b._id} value={b._id}>{b.brandName || b.name}</option>)}
-                </select>
-              </Field>
-              <Field label="Category" required error={fieldErrors.category_id}>
-                <select value={form.category_id} onChange={(e) => updateForm('category_id', e.target.value)} className={selectCls(fieldErrors.category_id)}>
-                  <option value="">Select category</option>
-                  {dropdowns.categories.map((c) => <option key={c._id} value={c._id}>{c.categoryName || c.name}</option>)}
-                </select>
-              </Field>
-              <Field label="Supplier" required error={fieldErrors.supplier_id}>
-                <select value={form.supplier_id} onChange={(e) => updateForm('supplier_id', e.target.value)} className={selectCls(fieldErrors.supplier_id)}>
-                  <option value="">Select supplier</option>
-                  {dropdowns.suppliers.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
-                </select>
-              </Field>
-            </div>
-          </Section>
+      {/* Page header */}
+      <div className="relative z-10 mb-5">
+        <h1 className="text-white text-[22px] font-bold m-0 flex items-center gap-2">
+          <i className="fas fa-box-open text-[20px]" /> Edit Product
+        </h1>
+        <p className="text-[#90bcc4] text-[15px] mt-1">Update product details and variations.</p>
+      </div>
 
-          {/* ── Product type & structure (READ-ONLY) ── */}
-          <div className="grid grid-cols-2 gap-4">
-            <Section title="Product type" icon="box">
-              <div className="flex flex-col gap-3">
-                {[
-                  { val: 'quantity', label: 'Quantity based', desc: 'Counted in whole units (e.g. bottles, bags)' },
-                  { val: 'measurable', label: 'Measurable', desc: 'Sold by weight or volume (e.g. kg, L)' }
-                ].map(({ val, label, desc }) => (
-                  <label key={val} className="flex items-start gap-3 cursor-not-allowed opacity-60">
-                    <input
-                      type="radio"
-                      name="product_type"
-                      value={val}
-                      checked={form.product_type === val}
-                      disabled
-                      className="mt-0.5 accent-[#1a6b7a] w-4 h-4"
-                    />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">{label}</p>
-                      <p className="text-xs text-gray-500">{desc}</p>
-                    </div>
-                  </label>
-                ))}
-                {(() => {
-                  const selectedUnit = dropdowns.units.find(u => String(u._id) === form.unit_id)
-                  const unitLabel = selectedUnit?.unitName || selectedUnit?.name || form.unit_id || '—'
-                  return (
-                    <ReadOnlyField
-                      label="Unit"
-                      value={unitLabel}
-                      icon="ruler"
-                    />
-                  )
-                })()}
-              </div>
-            </Section>
-
-            <Section title="Product structure" icon="layer-group">
-              <div className="flex flex-col gap-3">
-                {[
-                  { val: 'single', label: 'Single product', desc: 'One size, one price, one stock pool' },
-                  { val: 'variable', label: 'Variable product', desc: 'Multiple sizes, colours, or variants' }
-                ].map(({ val, label, desc }) => (
-                  <label key={val} className="flex items-start gap-3 cursor-not-allowed opacity-60">
-                    <input
-                      type="radio"
-                      name="structure"
-                      value={val}
-                      checked={form.structure === val}
-                      disabled
-                      className="mt-0.5 accent-[#1a6b7a] w-4 h-4"
-                    />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">{label}</p>
-                      <p className="text-xs text-gray-500">{desc}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </Section>
+      {/* Card */}
+      <div
+        className="relative z-10 bg-[#f0f4f6] w-full px-6 py-6 shadow-xl rounded-t-[20px] overflow-auto"
+        style={{ height: 'calc(100% - 70px)' }}
+      >
+        {/* Global error banner */}
+        {error && (
+          <div className="mb-5 bg-red-50 border-2 border-red-400 text-red-700 text-sm font-medium px-4 py-3 rounded-xl flex items-start gap-2">
+            <i className="fas fa-exclamation-triangle mt-0.5" />
+            <span>{error}</span>
           </div>
+        )}
 
-          {/* ── Batch tracking (READ-ONLY) ── */}
-          <Section title="Batch tracking" icon="layer-group">
-            <Toggle
-              enabled={form.batch_tracking}
-              onChange={() => {}}
-              label="Enable batch tracking"
-              description="Track stock in separate batches — each batch can have its own price, cost, wholesale pricing, and expiry date. Ideal for perishables and GRN-linked inventory."
-              readOnly={true}
-            />
-          </Section>
-
-          {/* ── Variation Type Selector (variable products only) ── */}
-          {!isSingle && (
-            <Section title="Variation types" icon="tags" accent>
-              <VariationTypeSelector
-                variationMasters={variationMasters}
-                selectedVariationTypes={selectedVariationTypes}
-                onToggleType={handleToggleType}
-                onToggleOption={handleToggleOption}
-                onAddCustom={handleAddCustomOption}
-                onRemoveCustom={handleRemoveCustomOption}
-                variationsLoading={variationsLoading}
+        {/* ── General details ── */}
+        <Section title="General details" icon="tag">
+          <div className="grid grid-cols-3 mt-4 gap-4">
+            <Field label="Product name" required error={fieldErrors.name}>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => updateForm('name', e.target.value)}
+                placeholder="e.g. White Rice 5kg"
+                className={inputCls(fieldErrors.name)}
               />
-            </Section>
-          )}
-
-          {/* ── Variations & Batches ── */}
-          <Section title={isSingle ? 'Stock & pricing' : 'Variations'} icon="cubes" accent>
-            {fieldErrors.variations && (
-              <p className={`text-xs font-medium ${C.errorText} flex items-center gap-1 mb-3`}>
-                <i className="fas fa-exclamation-circle" />{fieldErrors.variations}
-              </p>
-            )}
-
-            {form.variations.map((variation, varIdx) => (
-              <VariationCard
-                key={varIdx}
-                variation={variation}
-                varIdx={varIdx}
-                isSingle={isSingle}
-                batchTracking={form.batch_tracking}
-                hasSelectedTypes={selectedVariationTypes.length > 0}
-                onVariationChange={onVariationChange}
-                onBatchChange={onBatchChange}
-                onAddBatch={addBatch}
-                onRemoveBatch={removeBatch}
-                onRemoveVariation={removeVariation}
-                canRemoveVariation={form.variations.length > 1}
-                fieldErrors={fieldErrors}
+            </Field>
+            <Field label="Product code" required error={fieldErrors.code}>
+              <input
+                type="text"
+                value={form.code}
+                onChange={(e) => updateForm('code', e.target.value)}
+                placeholder="e.g. PRD-001"
+                className={inputCls(fieldErrors.code)}
               />
-            ))}
-          </Section>
+            </Field>
+            <Field label="Store" required error={fieldErrors.store_id}>
+              <select value={form.store_id} onChange={(e) => updateForm('store_id', e.target.value)} className={selectCls(fieldErrors.store_id)}>
+                <option value="">Select store</option>
+                {dropdowns.stores.map((s) => <option key={s._id} value={s._id}>{s.storeName || s.name}</option>)}
+              </select>
+            </Field>
+            <Field label="Brand" required error={fieldErrors.brand_id}>
+              <select value={form.brand_id} onChange={(e) => updateForm('brand_id', e.target.value)} className={selectCls(fieldErrors.brand_id)}>
+                <option value="">Select brand</option>
+                {dropdowns.brands.map((b) => <option key={b._id} value={b._id}>{b.brandName || b.name}</option>)}
+              </select>
+            </Field>
+            <Field label="Category" required error={fieldErrors.category_id}>
+              <select value={form.category_id} onChange={(e) => updateForm('category_id', e.target.value)} className={selectCls(fieldErrors.category_id)}>
+                <option value="">Select category</option>
+                {dropdowns.categories.map((c) => <option key={c._id} value={c._id}>{c.categoryName || c.name}</option>)}
+              </select>
+            </Field>
+            <Field label="Supplier" required error={fieldErrors.supplier_id}>
+              <select value={form.supplier_id} onChange={(e) => updateForm('supplier_id', e.target.value)} className={selectCls(fieldErrors.supplier_id)}>
+                <option value="">Select supplier</option>
+                {dropdowns.suppliers.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
+              </select>
+            </Field>
+          </div>
+        </Section>
 
-          {/* ── Other settings ── */}
-          <Section title="Other settings" icon="sliders-h">
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Tax (%)" error={fieldErrors.tax} hint="Applied at point of sale">
-                <input
-                  type="number"
-                  min="0"
-                  value={form.tax}
-                  onChange={(e) => updateForm('tax', e.target.value)}
-                  placeholder="0"
-                  className={inputCls(fieldErrors.tax)}
-                />
-              </Field>
-              <Field label="Low stock alert" error={fieldErrors.stock_alert} hint="Notify when stock falls below this number">
-                <input
-                  type="number"
-                  min="0"
-                  value={form.stock_alert}
-                  onChange={(e) => updateForm('stock_alert', e.target.value)}
-                  placeholder="5"
-                  className={inputCls(fieldErrors.stock_alert)}
-                />
-              </Field>
-            </div>
-          </Section>
-
-          {/* ── Product status ── */}
-          <Section title="Product status" icon="toggle-on">
-            <div className="flex gap-6">
+        {/* ── Product type & structure (READ-ONLY) ── */}
+        <div className="grid grid-cols-2 gap-4">
+          <Section title="Product type" icon="box">
+            <div className="flex flex-col gap-3">
               {[
-                { val: 'active', label: 'Active', desc: 'Visible and available for sale', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-300' },
-                { val: 'inactive', label: 'Inactive', desc: 'Hidden from POS and reports', color: 'text-gray-600', bg: 'bg-gray-100 border-gray-300' }
-              ].map(({ val, label, desc, color, bg }) => (
-                <label
-                  key={val}
-                  className={`flex items-start gap-3 cursor-pointer border-2 rounded-xl px-4 py-3 flex-1 transition-colors ${form.status === val ? `${bg} border-current` : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                >
+                { val: 'quantity', label: 'Quantity based', desc: 'Counted in whole units (e.g. bottles, bags)' },
+                { val: 'measurable', label: 'Measurable', desc: 'Sold by weight or volume (e.g. kg, L)' }
+              ].map(({ val, label, desc }) => (
+                <label key={val} className="flex items-start gap-3 cursor-not-allowed opacity-60">
                   <input
                     type="radio"
-                    name="status"
+                    name="product_type"
                     value={val}
-                    checked={form.status === val}
-                    onChange={() => updateForm('status', val)}
-                    className={`mt-0.5 accent-[#1a6b7a] w-4 h-4`}
+                    checked={form.product_type === val}
+                    disabled
+                    className="mt-0.5 accent-[#1a6b7a] w-4 h-4"
                   />
                   <div>
-                    <p className={`text-sm font-bold ${color}`}>{label}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+                    <p className="text-sm font-semibold text-gray-800">{label}</p>
+                    <p className="text-xs text-gray-500">{desc}</p>
+                  </div>
+                </label>
+              ))}
+              {(() => {
+                const selectedUnit = dropdowns.units.find(u => String(u._id) === form.unit_id)
+                const unitLabel = selectedUnit?.unitName || selectedUnit?.name || form.unit_id || '—'
+                return (
+                  <ReadOnlyField
+                    label="Unit"
+                    value={unitLabel}
+                    icon="ruler"
+                  />
+                )
+              })()}
+            </div>
+          </Section>
+
+          <Section title="Product structure" icon="layer-group">
+            <div className="flex flex-col gap-3">
+              {[
+                { val: 'single', label: 'Single product', desc: 'One size, one price, one stock pool' },
+                { val: 'variable', label: 'Variable product', desc: 'Multiple sizes, colours, or variants' }
+              ].map(({ val, label, desc }) => (
+                <label key={val} className="flex items-start gap-3 cursor-not-allowed opacity-60">
+                  <input
+                    type="radio"
+                    name="structure"
+                    value={val}
+                    checked={form.structure === val}
+                    disabled
+                    className="mt-0.5 accent-[#1a6b7a] w-4 h-4"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">{label}</p>
+                    <p className="text-xs text-gray-500">{desc}</p>
                   </div>
                 </label>
               ))}
             </div>
           </Section>
+        </div>
 
-          {/* ── Action buttons ── */}
-          <div className="flex justify-end gap-3 pt-2 pb-6">
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard/products')}
-              className="border-2 border-gray-300 text-gray-600 text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-gray-100 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading}
-              className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-sm font-bold px-8 py-2.5 rounded-xl hover:bg-[#155f6d] disabled:opacity-60 transition-colors flex items-center gap-2"
-            >
-              {loading ? (
-                <><i className="fas fa-spinner fa-spin" /> Saving…</>
-              ) : (
-                <><i className="fas fa-save" /> Update product</>
-              )}
-            </button>
+        {/* ── Batch tracking (READ-ONLY) ── */}
+        <Section title="Batch tracking" icon="layer-group">
+          <Toggle
+            enabled={form.batch_tracking}
+            onChange={() => { }}
+            label="Enable batch tracking"
+            description="Track stock in separate batches — each batch can have its own price, cost, wholesale pricing, and expiry date. Ideal for perishables and GRN-linked inventory."
+            readOnly={true}
+          />
+        </Section>
+
+        {/* ── Variation Type Selector (variable products only) ── */}
+        {!isSingle && (
+          <Section title="Variation types" icon="tags" accent>
+            <VariationTypeSelector
+              variationMasters={variationMasters}
+              selectedVariationTypes={selectedVariationTypes}
+              onToggleType={handleToggleType}
+              onToggleOption={handleToggleOption}
+              onAddCustom={handleAddCustomOption}
+              onRemoveCustom={handleRemoveCustomOption}
+              variationsLoading={variationsLoading}
+            />
+          </Section>
+        )}
+
+        {/* ── Variations & Batches ── */}
+        <Section title={isSingle ? 'Stock & pricing' : 'Variations'} icon="cubes" accent>
+          {fieldErrors.variations && (
+            <p className={`text-xs font-medium ${C.errorText} flex items-center gap-1 mb-3`}>
+              <i className="fas fa-exclamation-circle" />{fieldErrors.variations}
+            </p>
+          )}
+
+          {form.variations.map((variation, varIdx) => (
+            <VariationCard
+              key={varIdx}
+              variation={variation}
+              varIdx={varIdx}
+              isSingle={isSingle}
+              batchTracking={form.batch_tracking}
+              hasSelectedTypes={selectedVariationTypes.length > 0}
+              onVariationChange={onVariationChange}
+              onBatchChange={onBatchChange}
+              onAddBatch={addBatch}
+              onRemoveBatch={removeBatch}
+              onRemoveVariation={removeVariation}
+              canRemoveVariation={form.variations.length > 1}
+              fieldErrors={fieldErrors}
+            />
+          ))}
+        </Section>
+
+        {/* ── Other settings ── */}
+        <Section title="Other settings" icon="sliders-h">
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Tax (%)" error={fieldErrors.tax} hint="Applied at point of sale">
+              <input
+                type="number"
+                min="0"
+                value={form.tax}
+                onChange={(e) => updateForm('tax', e.target.value)}
+                placeholder="0"
+                className={inputCls(fieldErrors.tax)}
+              />
+            </Field>
+            <Field label="Low stock alert" error={fieldErrors.stock_alert} hint="Notify when stock falls below this number">
+              <input
+                type="number"
+                min="0"
+                value={form.stock_alert}
+                onChange={(e) => updateForm('stock_alert', e.target.value)}
+                placeholder="5"
+                className={inputCls(fieldErrors.stock_alert)}
+              />
+            </Field>
           </div>
+        </Section>
+
+        {/* ── Product status ── */}
+        <Section title="Product status" icon="toggle-on">
+          <div className="flex gap-6">
+            {[
+              { val: 'active', label: 'Active', desc: 'Visible and available for sale', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-300' },
+              { val: 'inactive', label: 'Inactive', desc: 'Hidden from POS and reports', color: 'text-gray-600', bg: 'bg-gray-100 border-gray-300' }
+            ].map(({ val, label, desc, color, bg }) => (
+              <label
+                key={val}
+                className={`flex items-start gap-3 cursor-pointer border-2 rounded-xl px-4 py-3 flex-1 transition-colors ${form.status === val ? `${bg} border-current` : 'border-gray-200 hover:border-gray-300'
+                  }`}
+              >
+                <input
+                  type="radio"
+                  name="status"
+                  value={val}
+                  checked={form.status === val}
+                  onChange={() => updateForm('status', val)}
+                  className={`mt-0.5 accent-[#1a6b7a] w-4 h-4`}
+                />
+                <div>
+                  <p className={`text-sm font-bold ${color}`}>{label}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+        </Section>
+
+        {/* ── Action buttons ── */}
+        <div className="flex justify-end gap-3 pt-2 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard/products')}
+            className="border-2 border-gray-300 text-gray-600 text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-sm font-bold px-8 py-2.5 rounded-xl hover:bg-[#155f6d] disabled:opacity-60 transition-colors flex items-center gap-2"
+          >
+            {loading ? (
+              <><i className="fas fa-spinner fa-spin" /> Saving…</>
+            ) : (
+              <><i className="fas fa-save" /> Update product</>
+            )}
+          </button>
         </div>
       </div>
     </div>
-  )
+  </div>
+)
 }
 
 export default EditProduct
