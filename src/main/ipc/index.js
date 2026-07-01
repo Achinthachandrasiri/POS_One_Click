@@ -10,6 +10,7 @@ import { registerVariationIpc } from './product/variation.ipc'
 import { registerUnitIpc } from './product/unit.ipc'
 import { registerProductIpc } from './product/product.ipc'
 import { registerGRNIpc } from './grn/grn.ipc'
+import { registerGRNReturnIpc } from './grn/grnReturn.ipc'
 
 export const registerIpcHandlers = () => {
   registerAuthIpc()
@@ -24,4 +25,6 @@ export const registerIpcHandlers = () => {
   registerUnitIpc()
   registerProductIpc()
   registerGRNIpc()
+  registerGRNReturnIpc()
+
 }

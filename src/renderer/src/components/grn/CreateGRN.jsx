@@ -1,78 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCreateGRN, initialBatch, calcLineTotal, num } from '../../hooks/useCreateGRN'
 
-// ─────────────────────────────────────────────────────────────
-// INITIAL STATE SHAPES
-// ─────────────────────────────────────────────────────────────
-const initialBatch = (defaults = {}) => ({
-  batch_number: '',
-  cost: defaults.cost ?? '',
-  price: defaults.price ?? '',
-  discount_type: 'none',
-  discount_value: '',
-  quantity: '',
-  expiry_date: ''
-})
-
-// ─────────────────────────────────────────────────────────────
-// A product line added to the GRN table
-// ─────────────────────────────────────────────────────────────
-const initialProductLine = (product, variation = null, batches = []) => {
-  const isVariable = product.structure === 'variable'
-  const isBatch = product.batch_tracking
-
-  const singleVar = !isVariable ? product.variations?.[0] : null
-  const targetVar = variation || singleVar
-
-  const existingStock = targetVar && !isBatch ? (targetVar.stock ?? 0) : null
-  const existingBatches = targetVar && isBatch ? (targetVar.batches || []) : []
-
-  return {
-    product_id: product._id,
-    product_name: product.name,
-    product_code: product.code,
-    structure: product.structure,
-    batch_tracking: isBatch,
-    variation_id: variation?._id || '',
-    variation_name: variation?.name || '',
-    _variationOptions: isVariable
-      ? product.variations.map((v) => ({
-        _id: v._id,
-        name: v.name,
-        stock: v.stock,
-        batches: v.batches,
-        cost: v.cost,
-        price: v.price
-      }))
-      : [],
-
-    _existingStock: existingStock,
-    _existingBatches: existingBatches,
-
-    cost: !isBatch ? (targetVar?.cost ?? '') : '',
-    price: !isBatch ? (targetVar?.price ?? '') : '',
-
-    quantity: '',
-    batches: isBatch ? batches : [],
-    wholesale_enabled: false
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// Initial Form
-// ─────────────────────────────────────────────────────────────
-const initialForm = () => ({
-  store_id: '',
-  supplier_id: '',
-  date: new Date().toISOString().slice(0, 10),
-  invoice_number: '',
-  payment_status: 'unpaid',
-  payment_type: 'cash',
-  cheque_details: { cheque_number: '', due_date: '', holder_name: '' },
-  products: []
-})
-
-// ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────
 const C = {
@@ -85,8 +13,8 @@ const C = {
 // ─────────────────────────────────────────────────────────────
 // SHARED PRIMITIVES
 // ─────────────────────────────────────────────────────────────
-const Field = ({ label, error, required, hint, children }) => (
-  <div className="flex flex-col gap-1.5">
+const Field = ({ label, error, required, hint, children, name }) => (
+  <div className="flex flex-col gap-1.5" data-field-key={name || undefined}>
     {label && (
       <label className={`text-xs font-semibold ${C.labelText} flex items-center gap-1`}>
         {label}
@@ -166,18 +94,6 @@ const DiscountField = ({ discountType, discountValue, onTypeChange, onValueChang
     </Field>
   )
 }
-
-// ─────────────────────────────────────────────────────────────
-// LINE TOTAL HELPER
-// ─────────────────────────────────────────────────────────────
-const calcLineTotal = (cost, quantity, discount_type, discount_value) => {
-  let total = (cost || 0) * (quantity || 0)
-  if (discount_type === 'percent' && discount_value) total -= total * (discount_value / 100)
-  else if (discount_type === 'fixed' && discount_value) total -= discount_value
-  return Math.max(total, 0)
-}
-
-const num = (v) => (v === '' || v == null ? null : Number(v))
 
 // ─────────────────────────────────────────────────────────────
 // PRODUCT SEARCH BAR (shared, sits above the table)
@@ -564,6 +480,7 @@ const ProductsTable = ({
           const lineTotal = !isBatch
             ? calcLineTotal(num(line.cost), num(line.quantity), line.discount_type, num(line.discount_value))
             : line.batches.reduce((s, b) => s + calcLineTotal(num(b.cost), num(b.quantity), b.discount_type, num(b.discount_value)), 0)
+          const lineHasBatchError = isBatch && Object.keys(fieldErrors).some((k) => k.startsWith(`${pp}.batches`))
 
           return (
             <div
@@ -576,7 +493,7 @@ const ProductsTable = ({
               {/* Main row */}
               <div className="grid grid-cols-12 gap-3 px-4 py-3 items-center">
                 {/* Product name + code */}
-                <div className="col-span-3 min-w-0">
+                <div className="col-span-3 min-w-0" data-field-key={`${pp}.product_id`}>
                   <div className="flex items-center gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate">{line.product_name}</p>
@@ -589,7 +506,7 @@ const ProductsTable = ({
                 </div>
 
                 {/* Variation select */}
-                <div className="col-span-1">
+                <div className="col-span-1" data-field-key={`${pp}.variation_id`}>
                   {isVariable ? (
                     <div>
                       <select
@@ -612,16 +529,23 @@ const ProductsTable = ({
                 </div>
 
                 {/* Current stock */}
-                <div className="col-span-2 text-center">
+                <div className="col-span-2 text-center" data-field-key={`${pp}.batches`}>
                   {isBatch ? (
-                    <button
-                      type="button"
-                      onClick={() => onManageBatches(idx)}
-                      className="text-xs font-semibold text-[#1a6b7a] hover:underline flex items-center gap-1 mx-auto"
-                    >
-                      <i className="fas fa-layer-group text-[10px]" />
-                      {line._existingBatches?.length || 0} batch{line._existingBatches?.length !== 1 ? 'es' : ''}
-                    </button>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => onManageBatches(idx)}
+                        className={`text-xs font-semibold hover:underline flex items-center gap-1 mx-auto ${lineHasBatchError ? 'text-red-600' : 'text-[#1a6b7a]'}`}
+                      >
+                        <i className={`fas ${lineHasBatchError ? 'fa-triangle-exclamation' : 'fa-layer-group'} text-[10px]`} />
+                        {line._existingBatches?.length || 0} batch{line._existingBatches?.length !== 1 ? 'es' : ''}
+                      </button>
+                      {lineHasBatchError && (
+                        <p className="text-[10px] text-red-500 mt-0.5">
+                          {fieldErrors[`${pp}.batches`] || 'Fix batch details'}
+                        </p>
+                      )}
+                    </div>
                   ) : line._existingStock !== null ? (
                     <span className={`text-sm font-bold ${line._existingStock <= 5 ? 'text-red-500' : 'text-emerald-600'}`}>
                       {line._existingStock}
@@ -635,7 +559,7 @@ const ProductsTable = ({
                 </div>
 
                 {/* Cost (only for non-batch products — batch lines capture cost per batch below) */}
-                <div className="col-span-2">
+                <div className="col-span-2" data-field-key={`${pp}.cost`}>
                   {!isBatch ? (
                     <div>
                       <div className="relative">
@@ -658,7 +582,7 @@ const ProductsTable = ({
                 </div>
 
                 {/* Quantity (only for non-batch products) */}
-                <div className="col-span-1">
+                <div className="col-span-1" data-field-key={`${pp}.quantity`}>
                   {!isBatch ? (
                     <div>
                       <input
@@ -788,7 +712,7 @@ const ProductsTable = ({
 // ─────────────────────────────────────────────────────────────
 // BATCH ENTRY MODAL — popup for receiving batches on a batch-tracked product
 // ─────────────────────────────────────────────────────────────
-const BatchEntryModal = ({ open, mode, productName, productCode, structure, variationOptions, singleExistingBatches, initialVariationId, initialBatches, onCancel, onSave
+const BatchEntryModal = ({ open, mode, productName, productCode, structure, variationOptions, singleExistingBatches, initialVariationId, initialBatches, onCancel, onSave, fieldErrors = {}, fieldKeyPrefix = ''
 }) => {
   const [variationId, setVariationId] = useState(initialVariationId || '')
   const [batches, setBatches] = useState(initialBatches?.length ? initialBatches : [initialBatch()])
@@ -827,6 +751,20 @@ const BatchEntryModal = ({ open, mode, productName, productCode, structure, vari
       return [{ ...row, cost: defaults.cost, price: defaults.price }]
     })
   }, [variationId, open, structure, mode, variationOptions])
+
+  // Translate "products[2].batches[1].cost" → "products[0].batches[1].cost" so the same
+  // BatchInputRow (which always renders with prodIdx={0} in this modal) can find its error.
+  // Computed before the `if (!open) return null` below to keep hook call order stable.
+  const remappedBatchErrors = useMemo(() => {
+    if (!fieldKeyPrefix) return {}
+    const remapped = {}
+    Object.keys(fieldErrors).forEach((key) => {
+      if (key.startsWith(`${fieldKeyPrefix}.batches`)) {
+        remapped[key.replace(fieldKeyPrefix, 'products[0]')] = fieldErrors[key]
+      }
+    })
+    return remapped
+  }, [fieldErrors, fieldKeyPrefix])
 
   if (!open) return null
 
@@ -941,7 +879,7 @@ const BatchEntryModal = ({ open, mode, productName, productCode, structure, vari
                 onChange={(_, idx2, key, val) => updateBatch(idx2, key, val)}
                 onRemove={(_, idx2) => removeRow(idx2)}
                 canRemove={batches.length > 1}
-                fieldErrors={{}}
+                fieldErrors={remappedBatchErrors}
                 existingBatches={existingBatches}
               />
             ))}
@@ -986,270 +924,42 @@ const BatchEntryModal = ({ open, mode, productName, productCode, structure, vari
 }
 
 // ─────────────────────────────────────────────────────────────
-// MAIN COMPONENT
+// MAIN COMPONENT (UI)
 // ─────────────────────────────────────────────────────────────
 const CreateGRN = () => {
-  const navigate = useNavigate()
-  const [form, setForm] = useState(initialForm())
-  const [allProducts, setAllProducts] = useState([])
-  const [dropdowns, setDropdowns] = useState({ stores: [], suppliers: [] })
-  const [fieldErrors, setFieldErrors] = useState({})
-  const [error, setError] = useState('')
-  const [batchModal, setBatchModal] = useState(null)
-  const [loadingProducts, setLoadingProducts] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  // ── load stores + suppliers on mount ──
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [storesRes, suppliersRes] = await Promise.all([
-          window.api.store.getAll(),
-          window.api.supplier.getAll()
-        ])
-        setDropdowns({
-          stores: storesRes?.stores || storesRes?.data || [],
-          suppliers: suppliersRes?.suppliers || suppliersRes?.data || []
-        })
-      } catch (e) {
-        console.error('Failed to load GRN dropdowns', e)
-      }
-    }
-    load()
-  }, [])
-
-  // ── fetch products whenever store changes ──
-  useEffect(() => {
-    if (!form.store_id) {
-      setAllProducts([])
-      return
-    }
-    const load = async () => {
-      setLoadingProducts(true)
-      try {
-        const res = await window.api.product.getByStore(form.store_id)
-        const all = res?.products || res?.data || []
-        setAllProducts(all.filter((p) => p.status === 'active'))
-      } catch (e) {
-        console.error('Failed to load products for store', e)
-        setAllProducts([])
-      } finally {
-        setLoadingProducts(false)
-      }
-    }
-    load()
-  }, [form.store_id])
-
-  // ── top-level field update ──
-  const updateForm = (key, val) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: val,
-      // clear added products when store changes so stale lines don't persist
-      ...(key === 'store_id' ? { products: [] } : {})
-    }))
-    if (fieldErrors[key]) setFieldErrors((prev) => { const e = { ...prev }; delete e[key]; return e })
-  }
-
-  const updateCheque = (key, val) => {
-    setForm((prev) => ({ ...prev, cheque_details: { ...prev.cheque_details, [key]: val } }))
-    const errKey = `cheque_details.${key}`
-    if (fieldErrors[errKey]) setFieldErrors((prev) => { const e = { ...prev }; delete e[errKey]; return e })
-  }
-
-  // ── add product from search ──
-  const handleAddProduct = (product) => {
-    const alreadyAdded = form.products.some(
-      (l) => l.product_id === product._id && product.structure === 'single'
-    )
-    if (alreadyAdded) return
-
-    if (product.batch_tracking) {
-      const isVariable = product.structure === 'variable'
-      setBatchModal({
-        mode: 'create',
-        lineIdx: null,
-        product,
-        structure: product.structure,
-        productName: product.name,
-        productCode: product.code,
-        variationOptions: isVariable
-          ? product.variations.map((v) => ({ _id: v._id, name: v.name, stock: v.stock, batches: v.batches }))
-          : [],
-        singleExistingBatches: !isVariable ? (product.variations?.[0]?.batches || []) : [],
-        variationId: '',
-        batches: [initialBatch()]
-      })
-      return
-    }
-
-    const newLine = initialProductLine(product)
-    setForm((prev) => ({ ...prev, products: [...prev.products, newLine] }))
-  }
-
-  // ── remove product line ──
-  const removeProductLine = (idx) => {
-    setForm((prev) => ({ ...prev, products: prev.products.filter((_, i) => i !== idx) }))
-    setFieldErrors((prev) => {
-      const e = { ...prev }
-      Object.keys(e).forEach((k) => { if (k.startsWith(`products[${idx}]`)) delete e[k] })
-      return e
-    })
-  }
-
-  // ── update any field on a product line ──
-  const updateProductLine = (idx, key, val) => {
-    setForm((prev) => {
-      const lines = [...prev.products]
-      lines[idx] = { ...lines[idx], [key]: val }
-      return { ...prev, products: lines }
-    })
-    const errKey = `products[${idx}].${key}`
-    if (fieldErrors[errKey]) setFieldErrors((prev) => { const e = { ...prev }; delete e[errKey]; return e })
-  }
-
-  // ── variation selection ──
-  const onSelectVariation = (idx, variationId) => {
-    setForm((prev) => {
-      const lines = [...prev.products]
-      const opt = lines[idx]._variationOptions.find((v) => v._id === variationId)
-      const isBatch = lines[idx].batch_tracking
-      lines[idx] = {
-        ...lines[idx],
-        variation_id: variationId,
-        variation_name: opt?.name || '',
-        _existingStock: !isBatch ? (opt?.stock ?? 0) : null,
-        _existingBatches: isBatch ? (opt?.batches || []) : [],
-        // Auto-fill cost & price from the selected variation (non-batch only)
-        ...(!isBatch && opt ? { cost: opt.cost ?? '', price: opt.price ?? '' } : {})
-      }
-      return { ...prev, products: lines }
-    })
-    const errKey = `products[${idx}].variation_id`
-    if (fieldErrors[errKey]) setFieldErrors((prev) => { const e = { ...prev }; delete e[errKey]; return e })
-  }
-
-
-  const openManageBatches = (idx) => {
-    const line = form.products[idx]
-    setBatchModal({
-      mode: 'edit',
-      lineIdx: idx,
-      product: null,
-      structure: line.structure,
-      productName: line.product_name,
-      productCode: line.product_code,
-      variationOptions: line._variationOptions,
-      singleExistingBatches: line.structure === 'single' ? line._existingBatches : [],
-      variationId: line.variation_id,
-      batches: line.batches.length ? line.batches : [initialBatch()]
-    })
-  }
-
-  const closeBatchModal = () => setBatchModal(null)
-
-  const handleBatchModalSave = (variationId, variationName, batches) => {
-    if (batchModal.mode === 'create') {
-      const isVariable = batchModal.structure === 'variable'
-      const variation = isVariable
-        ? batchModal.product.variations.find((v) => v._id === variationId)
-        : null
-      const newLine = initialProductLine(batchModal.product, variation, batches)
-      setForm((prev) => ({ ...prev, products: [...prev.products, newLine] }))
-    } else {
-      setForm((prev) => {
-        const lines = [...prev.products]
-        const idx = batchModal.lineIdx
-        const isVariable = lines[idx].structure === 'variable'
-        const opt = isVariable ? lines[idx]._variationOptions.find((v) => v._id === variationId) : null
-        lines[idx] = {
-          ...lines[idx],
-          ...(isVariable ? {
-            variation_id: variationId,
-            variation_name: opt?.name || variationName,
-            _existingBatches: opt?.batches || []
-          } : {}),
-          batches
-        }
-        return { ...prev, products: lines }
-      })
-    }
-    setBatchModal(null)
-  }
-
-  // ── live grand total ──
-  const grandTotal = useMemo(() => {
-    return form.products.reduce((sum, line) => {
-      if (!line.batch_tracking) {
-        return sum + calcLineTotal(num(line.cost), num(line.quantity), line.discount_type, num(line.discount_value))
-      }
-      return sum + line.batches.reduce(
-        (bSum, b) => bSum + calcLineTotal(num(b.cost), num(b.quantity), b.discount_type, num(b.discount_value)),
-        0
-      )
-    }, 0)
-  }, [form.products])
-
-  // ── submit ──
-  const handleSubmit = async () => {
-    setError('')
-    setLoading(true)
-
-    const payload = {
-      store_id: form.store_id,
-      supplier_id: form.supplier_id,
-      date: form.date,
-      invoice_number: form.invoice_number,
-      payment_status: form.payment_status,
-      payment_type: form.payment_type,
-      cheque_details: form.payment_type === 'cheque' ? form.cheque_details : null,
-      products: form.products.map((line) => ({
-        product_id: line.product_id,
-        product_name: line.product_name,
-        structure: line.structure,
-        variation_id: line.structure === 'variable' ? line.variation_id : null,
-        variation_name: line.structure === 'variable' ? line.variation_name : null,
-        batch_tracking: line.batch_tracking,
-        wholesale_enabled: line.wholesale_enabled,
-        // Non-batch: only quantity — cost/price come from existing product data on the server
-        cost: !line.batch_tracking ? num(line.cost) : null,
-        price: !line.batch_tracking ? null : null,
-        quantity: !line.batch_tracking ? num(line.quantity) : null,
-        discount_type: 'none',
-        discount_value: null,
-        batches: line.batch_tracking
-          ? line.batches.map((b) => ({
-            batch_number: b.batch_number,
-            cost: num(b.cost),
-            price: num(b.price),
-            quantity: num(b.quantity),
-            discount_type: b.discount_type,
-            discount_value: b.discount_type !== 'none' ? num(b.discount_value) : null,
-            expiry_date: b.expiry_date || null
-          }))
-          : []
-        // UI-only fields (_variationOptions, _existingStock, etc.) intentionally omitted
-      }))
-    }
-
-    try {
-      const res = await window.api.grn.create(payload)
-      if (res?.success) {
-        navigate('/dashboard/grn')
-      } else {
-        if (res?.fieldErrors) setFieldErrors(res.fieldErrors)
-        if (res?.error) setError(res.error)
-      }
-    } catch (e) {
-      console.error('GRN create failed', e)
-      setError('Something went wrong while creating the GRN. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const {
+    navigate,
+    form,
+    allProducts,
+    dropdowns,
+    fieldErrors,
+    error,
+    batchModal,
+    loadingProducts,
+    loading,
+    updateForm,
+    updateCheque,
+    handleAddProduct,
+    removeProductLine,
+    updateProductLine,
+    onSelectVariation,
+    openManageBatches,
+    closeBatchModal,
+    handleBatchModalSave,
+    grandTotal,
+    scrollToFirstError,
+    handleSubmit
+  } = useCreateGRN()
 
   return (
     <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
+      <style>{`
+        @keyframes grnErrorFlash {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); background-color: transparent; }
+          15%, 60% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.35); background-color: rgba(254, 226, 226, 0.6); }
+        }
+        .grn-error-flash { animation: grnErrorFlash 1.6s ease-out; border-radius: 0.75rem; }
+      `}</style>
       <div className="flex flex-col h-[630px]">
 
         {/* Background */}
@@ -1270,29 +980,46 @@ const CreateGRN = () => {
           className="relative z-10 bg-white w-full px-10 py-10 shadow-xl rounded-t-[20px] overflow-auto"
           style={{ height: 'calc(100% - 70px)' }}
         >
-          {error && (
-            <div className="mb-5 bg-red-50 border-2 border-red-400 text-red-700 text-sm font-medium px-4 py-3 rounded-xl flex items-start gap-2">
-              <i className="fas fa-exclamation-triangle mt-0.5" />
-              <span>{error}</span>
+          {(error || Object.keys(fieldErrors).length > 0) && (
+            <div className="mb-5 bg-red-50 border-2 border-red-400 text-red-700 text-sm rounded-xl px-4 py-3">
+              <div className="flex items-start gap-2 font-medium">
+                <i className="fas fa-exclamation-triangle mt-0.5" />
+                <span>{error || 'Please fix the highlighted issues before saving.'}</span>
+              </div>
+              {Object.keys(fieldErrors).length > 0 && (
+                <ul className="mt-2 ml-6 space-y-1 list-disc">
+                  {Object.entries(fieldErrors).map(([key, msg]) => (
+                    <li key={key}>
+                      <button
+                        type="button"
+                        onClick={() => scrollToFirstError({ [key]: msg })}
+                        className="text-left text-red-700 hover:text-red-900 underline underline-offset-2 font-normal"
+                      >
+                        {msg}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
 
           {/* ── GRN details ── */}
           <Section title="GRN details" icon="file-invoice">
             <div className="grid grid-cols-4 gap-2">
-              <Field label="Store" required error={fieldErrors.store_id}>
+              <Field label="Store" name="store_id" required error={fieldErrors.store_id}>
                 <select value={form.store_id} onChange={(e) => updateForm('store_id', e.target.value)} className={selectCls(fieldErrors.store_id)}>
                   <option value="">Select store</option>
                   {dropdowns.stores.map((s) => <option key={s._id} value={s._id}>{s.storeName || s.name}</option>)}
                 </select>
               </Field>
-              <Field label="Supplier" required error={fieldErrors.supplier_id}>
+              <Field label="Supplier" name="supplier_id" required error={fieldErrors.supplier_id}>
                 <select value={form.supplier_id} onChange={(e) => updateForm('supplier_id', e.target.value)} className={selectCls(fieldErrors.supplier_id)}>
                   <option value="">Select supplier</option>
                   {dropdowns.suppliers.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
                 </select>
               </Field>
-              <Field label="Invoice number" required error={fieldErrors.invoice_number}>
+              <Field label="Invoice number" name="invoice_number" required error={fieldErrors.invoice_number}>
                 <input
                   type="text"
                   value={form.invoice_number}
@@ -1301,7 +1028,7 @@ const CreateGRN = () => {
                   className={inputCls(fieldErrors.invoice_number)}
                 />
               </Field>
-              <Field label="Date" required error={fieldErrors.date}>
+              <Field label="Date" name="date" required error={fieldErrors.date}>
                 <input
                   type="date"
                   value={form.date}
@@ -1315,7 +1042,7 @@ const CreateGRN = () => {
           {/* ── Products ── */}
           <Section title="Products received" icon="boxes-stacked" accent>
             {/* Shared product search bar */}
-            <div className="mb-4">
+            <div className="mb-4" data-field-key="products">
               <ProductSearchBar allProducts={allProducts} onAdd={handleAddProduct} storeId={form.store_id} loadingProducts={loadingProducts} />
               {fieldErrors.products && (
                 <p className="text-xs font-medium text-red-600 flex items-center gap-1 mt-2">
@@ -1338,14 +1065,14 @@ const CreateGRN = () => {
           {/* ── Payment ── */}
           <Section title="Payment" icon="money-bill-wave">
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <Field label="Payment status" required error={fieldErrors.payment_status}>
+              <Field label="Payment status" name="payment_status" required error={fieldErrors.payment_status}>
                 <select value={form.payment_status} onChange={(e) => updateForm('payment_status', e.target.value)} className={selectCls(fieldErrors.payment_status)}>
                   <option value="unpaid">Unpaid</option>
                   <option value="partial">Partial</option>
                   <option value="paid">Paid</option>
                 </select>
               </Field>
-              <Field label="Payment type" required error={fieldErrors.payment_type}>
+              <Field label="Payment type" name="payment_type" required error={fieldErrors.payment_type}>
                 <select value={form.payment_type} onChange={(e) => updateForm('payment_type', e.target.value)} className={selectCls(fieldErrors.payment_type)}>
                   <option value="cash">Cash</option>
                   <option value="card">Card</option>
@@ -1355,17 +1082,17 @@ const CreateGRN = () => {
             </div>
             {form.payment_type === 'cheque' && (
               <div className="grid grid-cols-3 gap-4 pt-3 border-t border-dashed border-gray-200">
-                <Field label="Cheque number" required error={fieldErrors['cheque_details.cheque_number']}>
+                <Field label="Cheque number" name="cheque_details.cheque_number" required error={fieldErrors['cheque_details.cheque_number']}>
                   <input type="text" value={form.cheque_details.cheque_number}
                     onChange={(e) => updateCheque('cheque_number', e.target.value)}
                     placeholder="e.g. 000123" className={inputCls(fieldErrors['cheque_details.cheque_number'])} />
                 </Field>
-                <Field label="Due date" required error={fieldErrors['cheque_details.due_date']}>
+                <Field label="Due date" name="cheque_details.due_date" required error={fieldErrors['cheque_details.due_date']}>
                   <input type="date" value={form.cheque_details.due_date}
                     onChange={(e) => updateCheque('due_date', e.target.value)}
                     className={inputCls(fieldErrors['cheque_details.due_date'])} />
                 </Field>
-                <Field label="Holder name" required error={fieldErrors['cheque_details.holder_name']}>
+                <Field label="Holder name" name="cheque_details.holder_name" required error={fieldErrors['cheque_details.holder_name']}>
                   <input type="text" value={form.cheque_details.holder_name}
                     onChange={(e) => updateCheque('holder_name', e.target.value)}
                     placeholder="e.g. John Doe" className={inputCls(fieldErrors['cheque_details.holder_name'])} />
@@ -1399,6 +1126,8 @@ const CreateGRN = () => {
             initialBatches={batchModal?.batches}
             onCancel={closeBatchModal}
             onSave={handleBatchModalSave}
+            fieldErrors={fieldErrors}
+            fieldKeyPrefix={batchModal?.lineIdx != null ? `products[${batchModal.lineIdx}]` : ''}
           />
 
           {/* ── Action buttons ── */}
@@ -1430,3 +1159,4 @@ const CreateGRN = () => {
 }
 
 export default CreateGRN
+//achinthahost3000@gmail.com

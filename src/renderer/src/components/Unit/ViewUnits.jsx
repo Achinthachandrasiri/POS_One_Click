@@ -46,7 +46,7 @@ const ViewUnits = () => {
 
         {/* Card */}
         <div
-          className="relative z-10 bg-white w-full px-14 py-10 shadow-xl rounded-t-[20px] overflow-auto"
+          className="relative z-10 bg-white w-full px-7 py-[26px] shadow-xl rounded-t-[20px] overflow-auto"
           style={{ height: 'calc(100% - 70px)' }}
         >
           {/* Header */}
@@ -77,7 +77,7 @@ const ViewUnits = () => {
                       <td className="px-3 py-2">{u.shortName}</td>
                       <td className="px-3 py-2 text-right">
                         <button onClick={() => navigate(`/dashboard/products/units/edit/${u._id}`)}
-                        className="bg-white text-blue-500 px-3 py-1 rounded mr-2"><i className="fas fa-pen" /></button>
+                          className="bg-white text-blue-500 px-3 py-1 rounded mr-2"><i className="fas fa-pen" /></button>
                         <button onClick={() => handleDelete(u._id)} className="bg-white text-red-500 px-3 py-1 rounded"><i className="fas fa-trash" /></button>
                       </td>
                     </tr>

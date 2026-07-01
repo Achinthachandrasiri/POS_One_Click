@@ -1,11 +1,68 @@
 import mongoose from 'mongoose'
 import { GRN } from '../../models/grnModel'
+import { GRNReturn } from '../../models/grnReturnModel'
 import { Product } from '../../models/productsModel'
 import { Store } from '../../models/storeModel'
 import { Supplier } from '../../models/suppliersModel'
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id)
 const isValidNumber = (n) => typeof n === 'number' && !isNaN(n)
+
+// Human-readable labels for the fields most likely to collide on a unique index,
+// so a duplicate-key error reads naturally regardless of which field triggered it.
+const FRIENDLY_FIELD_NAMES = {
+  invoice_number: 'Invoice number',
+  store_id: 'Store',
+  supplier_id: 'Supplier',
+  batch_number: 'Batch number'
+}
+
+// ── TRANSLATE A THROWN/CAUGHT ERROR INTO A USER-FACING RESPONSE ──
+// Centralizes "what does the user see" for every failure mode that can come out of
+// a create/update GRN attempt, instead of every catch block guessing at a message.
+const translateGRNError = (error, fallbackMessage) => {
+  // Mongoose schema validation errors (e.g. enum mismatch, required field at the DB layer)
+  if (error.name === 'ValidationError') {
+    const fieldErrors = {}
+    Object.keys(error.errors).forEach((key) => {
+      const sub = error.errors[key]
+      // Mongoose's own messages are technical ("Path `x` is required") — prefer a plain one when we can build it
+      fieldErrors[key] = sub.kind === 'required'
+        ? `${FRIENDLY_FIELD_NAMES[key] || key} is required`
+        : sub.message
+    })
+    return { success: false, fieldErrors }
+  }
+
+  // Duplicate key (unique index) violation, e.g. an invoice number already used for this supplier
+  if (error.code === 11000 || error.name === 'MongoServerError' && error.code === 11000) {
+    const dupField = error.keyPattern ? Object.keys(error.keyPattern)[0] : null
+    const label = FRIENDLY_FIELD_NAMES[dupField] || 'This record'
+    return {
+      success: false,
+      fieldErrors: dupField ? { [dupField]: `${label} already exists. Please use a different value.` } : undefined,
+      error: `${label} already exists. Please use a different value.`
+    }
+  }
+
+  // Malformed ObjectId reaching the DB layer (should be rare since we pre-validate, but defensive)
+  if (error.name === 'CastError') {
+    return { success: false, error: 'One of the values sent was in an invalid format. Please refresh and try again.' }
+  }
+
+  // MongoDB connectivity/timeouts — distinct from "your data is wrong"
+  if (error.name === 'MongoNetworkError' || error.name === 'MongooseServerSelectionError') {
+    return { success: false, error: 'Could not reach the database. Please check your connection and try again.' }
+  }
+
+  // Errors thrown deliberately in cleanGRNProducts/applyStockIn (missing product/variation)
+  // already carry a clear, user-facing message — surface it instead of the generic fallback.
+  if (error.message && error.message.includes('no longer exists')) {
+    return { success: false, error: error.message }
+  }
+
+  return { success: false, error: fallbackMessage }
+}
 
 // ── LINE TOTAL HELPER ──
 const calcLineTotal = (cost, quantity, discount_type, discount_value) => {
@@ -18,8 +75,9 @@ const calcLineTotal = (cost, quantity, discount_type, discount_value) => {
   return Math.max(total, 0)
 }
 
+
 // ── SERIALIZE HELPER ──
-const serializeGRN = (grn) => {
+const serializeGRN = (grn, isReturned = false) => {
   if (!grn) return null
   try {
     const g = JSON.parse(JSON.stringify(grn))
@@ -76,6 +134,7 @@ const serializeGRN = (grn) => {
         }
         : null,
       grand_total: g.grand_total ?? 0,
+      is_returned: isReturned,
       createdAt: g.createdAt || null,
       updatedAt: g.updatedAt || null
     }
@@ -327,8 +386,8 @@ const applyStockIn = async (cleanedProducts, grnId) => {
         const existing = variation.batches.find((eb) => sameBatchNumber(eb.batch_number, b.batch_number))
 
         if (existing) {
-          // Same batch number already exists — top up its quantity only.
           existing.stock = (existing.stock || 0) + b.quantity
+          existing.grn_id = grnId   // ← THE FIX
         } else {
           variation.batches.push({
             batch_number: b.batch_number,
@@ -349,11 +408,11 @@ const applyStockIn = async (cleanedProducts, grnId) => {
   }
 }
 
-// ── REVERSE STOCK IN ──s.
+// ── REVERSE STOCK IN ──
 const reverseStockIn = async (products, grnId) => {
   for (const line of products) {
     const product = await Product.findById(line.product_id)
-    if (!product) continue // product deleted since — nothing to reverse
+    if (!product) continue
 
     const variation = line.structure === 'variable'
       ? product.variations.id(line.variation_id)
@@ -363,9 +422,20 @@ const reverseStockIn = async (products, grnId) => {
     if (!line.batch_tracking) {
       variation.stock = Math.max((variation.stock || 0) - (line.quantity || 0), 0)
     } else {
-      variation.batches = variation.batches.filter(
-        (b) => String(b.grn_id) !== String(grnId)
-      )
+      for (const grnBatch of line.batches) {
+        const existing = variation.batches.find((eb) =>
+          sameBatchNumber(eb.batch_number, grnBatch.batch_number)
+        )
+        if (!existing) continue
+
+        existing.stock = Math.max((existing.stock || 0) - (grnBatch.quantity || 0), 0)
+        // and now has zero stock, remove it entirely to keep data clean.
+        if (existing.stock === 0 && String(existing.grn_id) === String(grnId)) {
+          variation.batches = variation.batches.filter(
+            (eb) => !sameBatchNumber(eb.batch_number, grnBatch.batch_number)
+          )
+        }
+      }
     }
 
     await product.save()
@@ -417,7 +487,7 @@ export const handleCreateGRN = async (data) => {
       // Compensating rollback — no DB transaction available, so undo manually
       await GRN.findByIdAndDelete(newGRN._id)
       console.error('Stock-in error, GRN rolled back:', stockError.message)
-      return { success: false, error: stockError.message }
+      return translateGRNError(stockError, 'The GRN could not be saved because stock could not be updated. Please try again.')
     }
 
     const populated = await GRN.findById(newGRN._id).populate(populateOptions).lean()
@@ -430,19 +500,7 @@ export const handleCreateGRN = async (data) => {
   } catch (error) {
     console.error('Create GRN error:', error)
     if (newGRN) await GRN.findByIdAndDelete(newGRN._id).catch(() => { })
-    if (error.name === 'ValidationError') {
-      const fieldErrors = {}
-      Object.keys(error.errors).forEach((key) => {
-        fieldErrors[key] = error.errors[key].message
-      })
-      return { success: false, fieldErrors }
-    }
-    // Errors thrown deliberately in cleanGRNProducts (missing product/variation)
-    // have a clear, user-facing message — surface it instead of the generic fallback.
-    if (error.message && error.message.includes('no longer exists')) {
-      return { success: false, error: error.message }
-    }
-    return { success: false, error: 'Something went wrong while creating the GRN. Please try again.' }
+    return translateGRNError(error, 'Something went wrong while creating the GRN. Please try again.')
   }
 }
 
@@ -454,12 +512,19 @@ export const handleGetAllGRNs = async () => {
       .lean()
       .sort({ createdAt: -1 })
 
+    const returnedGrnIds = new Set(
+      (await GRNReturn.find().distinct('grn_id')).map((id) => String(id))
+    )
+
     return {
       success: true,
-      grns: grns.map(serializeGRN)
+      grns: grns.map((g) => serializeGRN(g, returnedGrnIds.has(String(g._id))))
     }
   } catch (error) {
     console.error('Get all GRNs error:', error)
+    if (error.name === 'MongoNetworkError' || error.name === 'MongooseServerSelectionError') {
+      return { success: false, error: 'Could not reach the database. Please check your connection and try again.' }
+    }
     return { success: false, error: 'Failed to load GRNs. Please try again.' }
   }
 }
@@ -476,7 +541,9 @@ export const handleGetGRNById = async (id) => {
       return { success: false, error: 'GRN not found. It may have been deleted.' }
     }
 
-    return { success: true, grn: serializeGRN(grn) }
+    const existingReturn = await GRNReturn.exists({ grn_id: id })
+
+    return { success: true, grn: serializeGRN(grn, !!existingReturn) }
   } catch (error) {
     console.error('Get GRN by id error:', error)
     return { success: false, error: 'Failed to load GRN. Please try again.' }
@@ -538,7 +605,7 @@ export const handleUpdateGRN = async (id, data) => {
         console.error('Rollback after failed GRN update also failed:', rollbackErr.message)
       )
       console.error('Stock-in error during GRN update, old stock restored:', stockError.message)
-      return { success: false, error: stockError.message }
+      return translateGRNError(stockError, 'The GRN could not be updated because stock could not be adjusted. Please try again.')
     }
 
     const updatedGRN = await GRN.findByIdAndUpdate(
@@ -566,16 +633,6 @@ export const handleUpdateGRN = async (id, data) => {
     }
   } catch (error) {
     console.error('Update GRN error:', error)
-    if (error.name === 'ValidationError') {
-      const fieldErrors = {}
-      Object.keys(error.errors).forEach((key) => {
-        fieldErrors[key] = error.errors[key].message
-      })
-      return { success: false, fieldErrors }
-    }
-    if (error.message && error.message.includes('no longer exists')) {
-      return { success: false, error: error.message }
-    }
-    return { success: false, error: 'Something went wrong while updating the GRN. Please try again.' }
+    return translateGRNError(error, 'Something went wrong while updating the GRN. Please try again.')
   }
 }

@@ -33,6 +33,8 @@ import EditProduct from './components/Product/EditProduct'
 import CreateGRN from './components/grn/CreateGRN'
 import EditGRN from './components/grn/EditGRN'
 import ViewGRN from './components/grn/ViewGRN'
+import CreateGRNReturn from './components/ReturnGRN/ReturnGRN'
+import ViewReturnGRN  from './components/ReturnGRN/ViewReturnGRN'
 import GeneralSettings from './components/Settings/GeneralSettings'
 import MailSettings from './components/Settings/MailSettings'
 
@@ -76,6 +78,8 @@ function App() {
         <Route path="grn" element={<ViewGRN />} />
         <Route path="grn/create" element={<CreateGRN />} />
         <Route path="grn/edit/:id" element={<EditGRN />} />
+        <Route path="grn/return/:id" element={<CreateGRNReturn />} />
+        <Route path="grn/return" element={<ViewReturnGRN />} />
         <Route path="settings/general" element={<GeneralSettings />} />
         <Route path="settings/mail" element={<MailSettings />} />
       </Route>

@@ -81,6 +81,12 @@ contextBridge.exposeInMainWorld('api', {
     getAll: () => ipcRenderer.invoke('grn:getAll'),
     getById: (id) => ipcRenderer.invoke('grn:getById', id),
     delete: (id) => ipcRenderer.invoke('grn:delete', id)
+  },
+  grnReturn: {
+    create: (data) => ipcRenderer.invoke('grnReturn:create', data),
+    getAll: () => ipcRenderer.invoke('grnReturn:getAll'),
+    getById: (id) => ipcRenderer.invoke('grnReturn:getById', id),
+    delete: (id) => ipcRenderer.invoke('grnReturn:delete', id)
   }
 })
 

@@ -53,7 +53,10 @@ const ViewSupplier = () => {
           <p className="text-[#90bcc4] text-[15px] mt-1">Manage supplier records</p>
         </div>
 
-        <div className="relative z-10 bg-white w-full px-14 py-10 shadow-xl rounded-t-[20px] overflow-auto" style={{ height: 'calc(100% - 70px)' }}>
+        <div
+          className="relative z-10 bg-white w-full px-[28px] py-3 shadow-xl rounded-t-[20px] overflow-auto"
+          style={{ height: 'calc(100% - 70px)' }}
+        >
           <div className="flex justify-between items-center mb-4">
             <div>
               <div className="flex  mt-4 gap-2">
