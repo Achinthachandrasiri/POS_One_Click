@@ -39,6 +39,10 @@ const ViewReturnGRN = () => {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
 
+  // ── Filter state ──
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+
   // ── Pagination state ──
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
@@ -67,14 +71,31 @@ const ViewReturnGRN = () => {
   const filtered = useMemo(() => {
     setCurrentPage(1)
     const term = search.trim().toLowerCase()
-    if (!term) return returns
-    return returns.filter((r) =>
-      r.invoice_number?.toLowerCase().includes(term) ||
-      r.store_id?.name?.toLowerCase().includes(term) ||
-      r.supplier_id?.name?.toLowerCase().includes(term) ||
-      returnReasonLabel[r.return_reason]?.toLowerCase().includes(term)
-    )
-  }, [returns, search])
+    const from = dateFrom ? new Date(dateFrom) : null
+    const to = dateTo ? new Date(`${dateTo}T23:59:59`) : null
+
+    return returns.filter((r) => {
+      const matchesSearch = !term ||
+        r.invoice_number?.toLowerCase().includes(term) ||
+        r.store_id?.name?.toLowerCase().includes(term) ||
+        r.supplier_id?.name?.toLowerCase().includes(term) ||
+        returnReasonLabel[r.return_reason]?.toLowerCase().includes(term)
+
+      const returnDate = r.return_date ? new Date(r.return_date) : null
+      const matchesFrom = !from || (returnDate && returnDate >= from)
+      const matchesTo = !to || (returnDate && returnDate <= to)
+
+      return matchesSearch && matchesFrom && matchesTo
+    })
+  }, [returns, search, dateFrom, dateTo])
+
+  const hasActiveFilters = search || dateFrom || dateTo
+
+  const clearFilters = () => {
+    setSearch('')
+    setDateFrom('')
+    setDateTo('')
+  }
 
   // ── Pagination calculations ──
   const totalPages = itemsPerPage === 'all' ? 1 : Math.ceil(filtered.length / itemsPerPage)
@@ -144,12 +165,12 @@ const ViewReturnGRN = () => {
 
         {/* Card */}
         <div
-          className="relative z-10 bg-white w-full px-7 py-3 shadow-xl rounded-t-[20px] overflow-auto"
+          className="relative z-10 bg-white w-full px-7 py-[11px] shadow-xl rounded-t-[20px] overflow-auto"
           style={{ height: 'calc(100% - 70px)' }}
         >
           {/* Search bar */}
           <div className="flex justify-between items-center mb-4">
-            <div className="flex mt-4 gap-2">
+            <div className="flex mt-4 gap-2 flex-wrap items-center">
               <input
                 type="text"
                 placeholder="Search by invoice, store, supplier or reason…"
@@ -157,6 +178,35 @@ const ViewReturnGRN = () => {
                 onChange={(e) => setSearch(e.target.value)}
                 className="border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-96 bg-transparent"
               />
+
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  max={dateTo || undefined}
+                  title="From date"
+                  className="border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 p-3 bg-transparent"
+                />
+                <span className="text-gray-400 text-sm">to</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  min={dateFrom || undefined}
+                  title="To date"
+                  className="border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 p-3 bg-transparent"
+                />
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-gray-500 hover:text-[#1a6b7a] font-medium px-2 py-1"
+                >
+                  Clear filters
+                </button>
+              )}
             </div>
           </div>
 

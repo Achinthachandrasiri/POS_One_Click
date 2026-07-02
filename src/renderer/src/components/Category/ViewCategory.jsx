@@ -57,7 +57,7 @@ const ViewCategory = () => {
 
         {/* Card */}
         <div
-          className="relative z-10 bg-white w-full px-7 py-3 shadow-xl rounded-t-[20px] overflow-auto"
+          className="relative z-10 bg-white w-full px-7 py-[10px] shadow-xl rounded-t-[20px] overflow-auto"
           style={{ height: 'calc(100% - 70px)' }}
         >
           {/* Header */}
