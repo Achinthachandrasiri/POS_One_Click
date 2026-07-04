@@ -35,6 +35,9 @@ import EditGRN from './components/grn/EditGRN'
 import ViewGRN from './components/grn/ViewGRN'
 import CreateGRNReturn from './components/ReturnGRN/ReturnGRN'
 import ViewReturnGRN  from './components/ReturnGRN/ViewReturnGRN'
+import CreateQuotation from './components/Quotation/CreateQuotation'
+import ViewQuatation from './components/Quotation/ViewQuatation'
+import EditQuotation from './components/Quotation/EditQuotation'
 import GeneralSettings from './components/Settings/GeneralSettings'
 import MailSettings from './components/Settings/MailSettings'
 
@@ -80,6 +83,9 @@ function App() {
         <Route path="grn/edit/:id" element={<EditGRN />} />
         <Route path="grn/return/:id" element={<CreateGRNReturn />} />
         <Route path="grn/return" element={<ViewReturnGRN />} />
+        <Route path="quotation" element={<ViewQuatation />} />
+        <Route path="quotation/create" element={<CreateQuotation />} />
+        <Route path="quotation/edit/:id" element={<EditQuotation />} />
         <Route path="settings/general" element={<GeneralSettings />} />
         <Route path="settings/mail" element={<MailSettings />} />
       </Route>

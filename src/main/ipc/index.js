@@ -11,6 +11,7 @@ import { registerUnitIpc } from './product/unit.ipc'
 import { registerProductIpc } from './product/product.ipc'
 import { registerGRNIpc } from './grn/grn.ipc'
 import { registerGRNReturnIpc } from './grn/grnReturn.ipc'
+import { registerQuotationIpc } from './quotation/quotation.ipc'
 
 export const registerIpcHandlers = () => {
   registerAuthIpc()
@@ -26,5 +27,6 @@ export const registerIpcHandlers = () => {
   registerProductIpc()
   registerGRNIpc()
   registerGRNReturnIpc()
+  registerQuotationIpc()
 
 }
