@@ -88,12 +88,11 @@ contextBridge.exposeInMainWorld('api', {
     getById: (id) => ipcRenderer.invoke('grnReturn:getById', id),
     delete: (id) => ipcRenderer.invoke('grnReturn:delete', id)
   },
-  quotation: {
-    create: (data) => ipcRenderer.invoke('quotation:create', data),
-    update: (id, data) => ipcRenderer.invoke('quotation:update', id, data),
-    getAll: (filters) => ipcRenderer.invoke('quotation:getAll', filters),
-    getById: (id) => ipcRenderer.invoke('quotation:getById', id),
-    delete: (id) => ipcRenderer.invoke('quotation:delete', id)
+  settings: {
+    getGeneral: () => ipcRenderer.invoke('settings:getGeneral'),
+    saveGeneral: (data) => ipcRenderer.invoke('settings:saveGeneral', data),
+    getMail: () => ipcRenderer.invoke('settings:getMail'),
+    saveMail: (data) => ipcRenderer.invoke('settings:saveMail', data),
   }
 })
 
