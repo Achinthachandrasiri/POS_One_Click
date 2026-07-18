@@ -40,6 +40,12 @@ import ViewQuatation from './components/Quotation/ViewQuatation'
 import EditQuotation from './components/Quotation/EditQuotation'
 import GeneralSettings from './components/Settings/GeneralSettings'
 import MailSettings from './components/Settings/MailSettings'
+import CreateExpenses from './components/Expenses/CreateExpenses'
+import ViewExpenses from './components/Expenses/ViewExpenses'
+import EditExpenses from './components/Expenses/EditExpenses'
+import CreateService from './components/Service/CreateService'
+import EditService from './components/Service/EditService'
+import ViewService from './components/Service/ViewService'
 
 function App() {
   return (
@@ -86,6 +92,12 @@ function App() {
         <Route path="quotation" element={<ViewQuatation />} />
         <Route path="quotation/create" element={<CreateQuotation />} />
         <Route path="quotation/edit/:id" element={<EditQuotation />} />
+        <Route path="expenses" element={<ViewExpenses />} />
+        <Route path="expenses/create" element={<CreateExpenses />} />
+        <Route path="expenses/edit/:id" element={<EditExpenses />} />
+        <Route path="services" element={<ViewService />} />
+        <Route path="services/create" element={<CreateService />} />
+        <Route path="services/edit/:id" element={<EditService />} />
         <Route path="settings/general" element={<GeneralSettings />} />
         <Route path="settings/mail" element={<MailSettings />} />
       </Route>

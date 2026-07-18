@@ -1,14 +1,8 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useExpenseHooks } from '../../hooks/expenseHooks'
+import { useServiceHooks } from '../../hooks/useServiceHooks'
 
 const money = (v) => `Rs ${Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
-const dateFmt = (d) => (d ? new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '—')
-
-const addedByName = (ref) => {
-  if (!ref || typeof ref !== 'object') return '—'
-  return `${ref.first_name || ''} ${ref.last_name || ''}`.trim() || '—'
-}
 
 // Normalizes an _id to a plain string regardless of whether it arrives as
 // a string, a Mongoose ObjectId-shaped object ({ $oid: '...' }), or an
@@ -25,22 +19,16 @@ const idStr = (v) => {
   return String(v)
 }
 
-// Normalizes an expense's date field down to a yyyy-mm-dd string so it can
-// be compared directly against the <input type="date"> filter values,
-// without time-of-day or timezone throwing off the comparison.
-const dateOnly = (d) => {
-  if (!d) return ''
-  const date = new Date(d)
-  if (Number.isNaN(date.getTime())) return ''
-  return date.toISOString().split('T')[0]
+const categoryName = (ref) => {
+  if (!ref || typeof ref !== 'object') return '—'
+  return ref.categoryName || '—'
 }
 
 const inputCls = 'border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 bg-transparent'
 const selectCls = 'border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 p-3 bg-transparent cursor-pointer'
-const filterLabelCls = 'text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1 block'
 
 // ─────────────────────────────────────────────────────────────
-// Pagination footer (mirrors ViewQuatation.jsx's PaginationFooter)
+// Pagination footer (mirrors ViewExpenses.jsx / ViewQuatation.jsx's PaginationFooter)
 // ─────────────────────────────────────────────────────────────
 const PaginationFooter = ({ totalItems, currentPage, itemsPerPage, totalPages, onPageChange, onItemsPerPageChange }) => (
   <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
@@ -116,87 +104,66 @@ const PaginationFooter = ({ totalItems, currentPage, itemsPerPage, totalPages, o
   </div>
 )
 
-const ViewExpenses = () => {
+const ViewService = () => {
   const navigate = useNavigate()
-  const { getAllExpenses, deleteExpense, loading, error } = useExpenseHooks()
-  const [expenses, setExpenses] = useState([])
-  const [search, setSearch] = useState('')
-  const [userFilter, setUserFilter] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
+  const { getAllServices, deleteService, loading, error } = useServiceHooks()
+  const [services, setServices] = useState([])
+  const [categories, setCategories] = useState([])
 
-  // ── Pagination state ──
+  const [search, setSearch] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+
+  // ── Pagination state (server-side — the controller supports skip/limit) ──
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [pagination, setPagination] = useState({ total: 0, totalPages: 1 })
 
-  const loadExpenses = async () => {
-    const res = await getAllExpenses()
+  const loadCategories = async () => {
+    const res = await window.api.category.getAll()
     if (res?.success) {
-      setExpenses(res.expenses || [])
+      setCategories(res.data || [])
     }
   }
 
+  const loadServices = useCallback(async () => {
+    const params = {
+      page: currentPage,
+      limit: itemsPerPage,
+      ...(categoryFilter && { category: categoryFilter }),
+      ...(statusFilter && { status: statusFilter }),
+      ...(search.trim() && { search: search.trim() }),
+    }
+
+    const res = await getAllServices(params)
+    if (res?.success) {
+      setServices(res.data || [])
+      setPagination(res.pagination || { total: 0, totalPages: 1 })
+    }
+  }, [currentPage, itemsPerPage, categoryFilter, statusFilter, search, getAllServices])
+
   useEffect(() => {
-    loadExpenses()
+    loadCategories()
   }, [])
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this expense?')
-    if (!confirmDelete) return
+  useEffect(() => {
+    loadServices()
+  }, [loadServices])
 
-    const res = await deleteExpense(id)
-    if (res?.success) {
-      setExpenses((prev) => prev.filter((e) => idStr(e._id) !== idStr(id)))
-    }
-  }
-
-  // Unique list of users who have logged expenses, derived from what's
-  // already loaded — avoids a separate API call just to populate the
-  // filter dropdown.
-  const userOptions = useMemo(() => {
-    const seen = new Map()
-    expenses.forEach((e) => {
-      const uid = idStr(e.added_by?._id)
-      if (uid && !seen.has(uid)) {
-        seen.set(uid, addedByName(e.added_by))
-      }
-    })
-    return Array.from(seen.entries()).map(([id, name]) => ({ id, name }))
-  }, [expenses])
-
-  const filteredExpenses = useMemo(() => {
-    const q = search.trim().toLowerCase()
-
-    return expenses.filter((e) => {
-      if (q) {
-        const haystack = `${e.reason} ${addedByName(e.added_by)} ${e.note || ''}`.toLowerCase()
-        if (!haystack.includes(q)) return false
-      }
-
-      if (userFilter && idStr(e.added_by?._id) !== userFilter) {
-        return false
-      }
-
-      const expDate = dateOnly(e.date)
-      if (dateFrom && (!expDate || expDate < dateFrom)) return false
-      if (dateTo && (!expDate || expDate > dateTo)) return false
-
-      return true
-    })
-  }, [search, expenses, userFilter, dateFrom, dateTo])
-
-  // Reset to page 1 whenever the underlying filtered list changes
+  // Reset to page 1 whenever a filter changes (not on page/limit changes themselves)
   useEffect(() => {
     setCurrentPage(1)
-  }, [search, userFilter, dateFrom, dateTo, expenses.length])
+  }, [search, categoryFilter, statusFilter])
 
-  const totalPages = itemsPerPage === 'all' ? 1 : Math.ceil(filteredExpenses.length / itemsPerPage)
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this service?')
+    if (!confirmDelete) return
 
-  const paginatedExpenses = useMemo(() => {
-    if (itemsPerPage === 'all') return filteredExpenses
-    const start = (currentPage - 1) * itemsPerPage
-    return filteredExpenses.slice(start, start + itemsPerPage)
-  }, [filteredExpenses, currentPage, itemsPerPage])
+    const res = await deleteService(id)
+    if (res?.success) {
+      loadServices()
+    }
+  }
 
   const handleItemsPerPageChange = (val) => {
     setItemsPerPage(val === 'all' ? 'all' : Number(val))
@@ -205,12 +172,14 @@ const ViewExpenses = () => {
 
   const clearFilters = () => {
     setSearch('')
-    setUserFilter('')
-    setDateFrom('')
-    setDateTo('')
+    setCategoryFilter('')
+    setStatusFilter('')
   }
 
-  const hasActiveFilters = search || userFilter || dateFrom || dateTo
+  const hasActiveFilters = search || categoryFilter || statusFilter
+
+  const totalItems = pagination.total || 0
+  const totalPages = itemsPerPage === 'all' ? 1 : (pagination.totalPages || 1)
 
   return (
     <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
@@ -225,8 +194,8 @@ const ViewExpenses = () => {
 
         {/* Title */}
         <div className="relative z-10 mb-5">
-          <h1 className="text-white text-[22px] font-semibold m-0">View Expense</h1>
-          <p className="text-[#90bcc4] text-[15px] mt-1">View expense records</p>
+          <h1 className="text-white text-[22px] font-semibold m-0">View Service</h1>
+          <p className="text-[#90bcc4] text-[15px] mt-1">View service records</p>
         </div>
 
         {/* Card */}
@@ -241,7 +210,7 @@ const ViewExpenses = () => {
               <div>
                 <input
                   type="text"
-                  placeholder="Search expenses..."
+                  placeholder="Search services..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className={`${inputCls} w-60`}
@@ -250,35 +219,27 @@ const ViewExpenses = () => {
 
               <div>
                 <select
-                  value={userFilter}
-                  onChange={(e) => setUserFilter(e.target.value)}
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
                   className={`${selectCls} w-44`}
                 >
-                  <option value="">All users</option>
-                  {userOptions.map((u) => (
-                    <option key={u.id} value={u.id}>{u.name}</option>
+                  <option value="">All categories</option>
+                  {categories.map((c) => (
+                    <option key={idStr(c._id)} value={idStr(c._id)}>{c.categoryName}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  max={dateTo || undefined}
-                  className={inputCls}
-                />
-              </div>
-
-              <div>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  min={dateFrom || undefined}
-                  className={inputCls}
-                />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className={`${selectCls} w-36`}
+                >
+                  <option value="">All status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
               </div>
 
               {hasActiveFilters && (
@@ -294,10 +255,10 @@ const ViewExpenses = () => {
 
             <div className="flex gap-2">
               <button
-                onClick={() => navigate('/dashboard/expenses/create')}
+                onClick={() => navigate('/dashboard/services/create')}
                 className="bg-[#1a6b7a] mt-4 border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded-lg hover:opacity-90 whitespace-nowrap"
               >
-                + Add Expense
+                + Add Service
               </button>
             </div>
           </div>
@@ -309,57 +270,69 @@ const ViewExpenses = () => {
 
           {/* Table */}
           <div className="border border-gray-200 rounded overflow-auto max-h-[60vh]">
-            <table className="w-full min-w-[600px] border-collapse text-sm">
+            <table className="w-full min-w-[700px] border-collapse text-sm">
               <thead>
                 <tr className="bg-[#f5fbfd] text-[#2a5b67] text-xs">
-                  <th className="text-left px-3 py-2 border-b">Date</th>
-                  <th className="text-left px-3 py-2 border-b">Reason</th>
-                  <th className="text-left px-3 py-2 border-b">Added By</th>
-                  <th className="text-right px-3 py-2 border-b">Amount</th>
+                  <th className="text-left px-3 py-2 border-b">Service Code</th>
+                  <th className="text-left px-3 py-2 border-b">Name</th>
+                  <th className="text-left px-3 py-2 border-b">Category</th>
+                  <th className="text-right px-3 py-2 border-b">Price</th>
+                  <th className="text-center px-3 py-2 border-b">Status</th>
                   <th className="text-right px-3 py-2 border-b">Actions</th>
                 </tr>
               </thead>
 
               <tbody>
-                {paginatedExpenses.length === 0 && !loading ? (
+                {services.length === 0 && !loading ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-6 text-gray-500 text-xs">
-                      {hasActiveFilters ? 'No expenses match your filters' : 'No expenses found'}
+                    <td colSpan={6} className="text-center py-6 text-gray-500 text-xs">
+                      {hasActiveFilters ? 'No services match your filters' : 'No services found'}
                     </td>
                   </tr>
                 ) : (
-                  paginatedExpenses.map((exp) => (
-                    <tr key={idStr(exp._id)} className="border-b hover:bg-gray-50">
-                      <td className="px-3 py-2">{dateFmt(exp.date)}</td>
+                  services.map((svc) => (
+                    <tr key={idStr(svc._id)} className="border-b hover:bg-gray-50">
+                      <td className="px-3 py-2 text-gray-600">{svc.service_code}</td>
 
                       <td className="px-3 py-2">
-                        <span>{exp.reason}</span>
-                        {exp.note && (
+                        <span>{svc.service_name}</span>
+                        {svc.description && (
                           <i
                             className="fas fa-circle-info text-gray-400 ml-1.5 text-xs"
-                            title={exp.note}
+                            title={svc.description}
                           />
                         )}
                       </td>
 
-                      <td className="px-3 py-2 text-gray-600">{addedByName(exp.added_by)}</td>
+                      <td className="px-3 py-2 text-gray-600">{categoryName(svc.category)}</td>
 
                       <td className="px-3 py-2 text-right font-semibold text-[#1a6b7a]">
-                        {money(exp.amount)}
+                        {money(svc.price)}
+                      </td>
+
+                      <td className="px-3 py-2 text-center">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${svc.status === 'active'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-500'
+                            }`}
+                        >
+                          {svc.status === 'active' ? 'Active' : 'Inactive'}
+                        </span>
                       </td>
 
                       <td className="px-3 py-2 text-right">
                         <div className="inline-flex gap-2 justify-end w-full">
 
                           <button
-                            onClick={() => navigate(`/dashboard/expenses/edit/${idStr(exp._id)}`)}
+                            onClick={() => navigate(`/dashboard/services/edit/${idStr(svc._id)}`)}
                             className="bg-white text-blue-500 text-sm px-3 py-1 rounded hover:opacity-90"
                           >
                             <i className="fas fa-pen"></i>
                           </button>
 
                           <button
-                            onClick={() => handleDelete(exp._id)}
+                            onClick={() => handleDelete(svc._id)}
                             className="bg-white text-red-500 text-sm px-3 py-1 rounded hover:opacity-90"
                           >
                             <i className="fas fa-trash"></i>
@@ -374,9 +347,9 @@ const ViewExpenses = () => {
             </table>
           </div>
 
-          {!loading && !error && filteredExpenses.length > 0 && (
+          {!loading && !error && totalItems > 0 && (
             <PaginationFooter
-              totalItems={filteredExpenses.length}
+              totalItems={totalItems}
               currentPage={currentPage}
               itemsPerPage={itemsPerPage}
               totalPages={totalPages}
@@ -391,4 +364,4 @@ const ViewExpenses = () => {
   )
 }
 
-export default ViewExpenses
+export default ViewService
