@@ -16,7 +16,8 @@ import {
   FiPackage,
   FiSettings,
   FiMail,
-  FiRepeat
+  FiRepeat,
+  FiFileText
 } from "react-icons/fi"
 
 const TreeLines = ({ itemCount }) => {
@@ -218,6 +219,15 @@ const Sidebar = () => {
             </div>
           )}
         </div>
+
+        {/* Quotation */}
+        <button
+          onClick={() => navigate('/dashboard/quotation')}
+          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+        >
+          <FiFileText />
+          <span>Quotation</span>
+        </button>
 
         {/* Expenses */}
         <button
