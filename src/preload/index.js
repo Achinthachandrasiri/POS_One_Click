@@ -87,6 +87,12 @@ contextBridge.exposeInMainWorld('api', {
     getAll: () => ipcRenderer.invoke('grnReturn:getAll'),
     getById: (id) => ipcRenderer.invoke('grnReturn:getById', id),
     delete: (id) => ipcRenderer.invoke('grnReturn:delete', id)
+  },
+  settings: {
+    getGeneral: () => ipcRenderer.invoke('settings:getGeneral'),
+    saveGeneral: (data) => ipcRenderer.invoke('settings:saveGeneral', data),
+    getMail: () => ipcRenderer.invoke('settings:getMail'),
+    saveMail: (data) => ipcRenderer.invoke('settings:saveMail', data),
   }
 })
 
