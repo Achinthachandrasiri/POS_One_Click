@@ -57,7 +57,7 @@ const ViewBrands = () => {
 
         {/* Card */}
         <div
-          className="relative z-10 bg-white w-full px-14 py-10 shadow-xl rounded-t-[20px] overflow-auto"
+          className="relative z-10 bg-white w-full px-[28px] py-[10px] shadow-xl rounded-t-[20px] overflow-auto"
           style={{ height: 'calc(100% - 70px)' }}
         >
           {/* Header */}
@@ -77,7 +77,7 @@ const ViewBrands = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => navigate('/dashboard/products/brands/create')}
-                className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded-lg hover:opacity-90"
+                className="bg-[#1a6b7a] border-2 mt-4 border-[#1a6b7a] text-white text-md px-6 py-3 rounded-lg hover:opacity-90"
               >
                 + Create Brand
               </button>

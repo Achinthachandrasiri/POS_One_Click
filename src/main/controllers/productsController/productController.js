@@ -488,7 +488,6 @@ export const handleDeleteProduct = async (id) => {
 }
 
 // ── UPDATE PRODUCT STATUS ──
-// ── UPDATE PRODUCT STATUS ──
 export const handleUpdateProductStatus = async ({ id, status }) => {
   if (!id) return { success: false, error: 'Product ID is required' }
   if (!status || !['active', 'inactive'].includes(status)) {
@@ -518,5 +517,25 @@ export const handleUpdateProductStatus = async ({ id, status }) => {
       return { success: false, error: 'Invalid product ID format.' }
     }
     return { success: false, error: 'Failed to update product status. Please try again.' }
+  }
+}
+
+// ── GET PRODUCTS BY STORE ──
+export const handleGetProductsByStore = async (storeId) => {
+  try {
+    if (!storeId) return { success: false, error: 'Store ID is required' }
+
+    const products = await Product.find({ store_id: storeId })
+      .populate(populateOptions)
+      .lean()
+      .sort({ createdAt: -1 })
+
+    return {
+      success: true,
+      products: products.map(serializeProduct)
+    }
+  } catch (error) {
+    console.error('Get products by store error:', error)
+    return { success: false, error: 'Failed to load products for store.' }
   }
 }

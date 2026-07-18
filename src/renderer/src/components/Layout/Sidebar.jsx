@@ -15,7 +15,8 @@ import {
   FiSliders,
   FiPackage,
   FiSettings,
-  FiMail
+  FiMail,
+  FiRepeat
 } from "react-icons/fi"
 
 const TreeLines = ({ itemCount }) => {
@@ -65,6 +66,7 @@ const Sidebar = () => {
   const [peopleOpen, setPeopleOpen] = useState(false)
   const [productsOpen, setProductsOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [stockInOpen, setStockInOpen] = useState(false)
 
   const subItems = [
     { label: 'Users', icon: <FiUser />, path: '/dashboard/users' },
@@ -83,6 +85,11 @@ const Sidebar = () => {
   const settingsSubItems = [
     { label: 'General Settings', icon: <FiSliders />, path: '/dashboard/settings/general' },
     { label: 'Mail Settings', icon: <FiMail />, path: '/dashboard/settings/mail' },
+  ]
+
+  const stockInSubItems = [
+    { label: 'Stock In', icon: <FiBox />, path: '/dashboard/grn' },
+    { label: 'Return Stock', icon: <FiRepeat />, path: '/dashboard/grn/return' },
   ]
 
   return (
@@ -180,6 +187,37 @@ const Sidebar = () => {
           <FiShoppingCart />
           <span>Store</span>
         </button>
+
+        <div>
+          <button
+            onClick={() => setStockInOpen(!stockInOpen)}
+            className="flex items-center justify-between w-full px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+          >
+            <div className="flex items-center gap-3">
+              <FiRepeat />
+              <span>Stock In</span>
+            </div>
+            <span className="text-md">
+              {stockInOpen ? <FiChevronDown /> : <FiChevronRight />}
+            </span>
+          </button>
+
+          {stockInOpen && (
+            <div className="relative flex flex-col mt-1 ml-6 gap-0">
+              <TreeLines itemCount={stockInSubItems.length} />
+              {stockInSubItems.map((item, i) => (
+                <button
+                  key={i}
+                  onClick={() => navigate(item.path)}
+                  className="relative flex items-center gap-3 pl-9 pr-3 py-2.5 text-[15px] text-[#ffffff] hover:text-white hover:bg-[#0e5a6a] rounded-md text-left"
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Expenses */}
         <button

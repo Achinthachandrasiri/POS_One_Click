@@ -57,7 +57,10 @@ const ViewStore = () => {
         </div>
 
         {/* Card */}
-        <div className="relative z-10 bg-white w-full px-14 py-10 shadow-xl rounded-t-[20px] overflow-auto" style={{ height: 'calc(100% - 70px)' }}>
+        <div
+          className="relative z-10 bg-white w-full px-7 py-[10px] shadow-xl rounded-t-[20px] overflow-auto"
+          style={{ height: 'calc(100% - 70px)' }}
+        >
 
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
@@ -76,7 +79,7 @@ const ViewStore = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => navigate('/dashboard/stores/create')}
-                className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded-lg hover:opacity-90"
+                className="bg-[#1a6b7a] mt-4 border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded-lg hover:opacity-90"
               >
                 + Create Store
               </button>

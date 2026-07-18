@@ -30,6 +30,11 @@ import EditUnit from './components/Unit/EditUnit'
 import ViewProduct from './components/Product/ViewProduct'
 import CreateProduct from './components/Product/CreateProduct'
 import EditProduct from './components/Product/EditProduct'
+import CreateGRN from './components/grn/CreateGRN'
+import EditGRN from './components/grn/EditGRN'
+import ViewGRN from './components/grn/ViewGRN'
+import CreateGRNReturn from './components/ReturnGRN/ReturnGRN'
+import ViewReturnGRN  from './components/ReturnGRN/ViewReturnGRN'
 import GeneralSettings from './components/Settings/GeneralSettings'
 import MailSettings from './components/Settings/MailSettings'
 
@@ -70,6 +75,11 @@ function App() {
         <Route path="products" element={<ViewProduct />} />
         <Route path="products/create" element={<CreateProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
+        <Route path="grn" element={<ViewGRN />} />
+        <Route path="grn/create" element={<CreateGRN />} />
+        <Route path="grn/edit/:id" element={<EditGRN />} />
+        <Route path="grn/return/:id" element={<CreateGRNReturn />} />
+        <Route path="grn/return" element={<ViewReturnGRN />} />
         <Route path="settings/general" element={<GeneralSettings />} />
         <Route path="settings/mail" element={<MailSettings />} />
       </Route>

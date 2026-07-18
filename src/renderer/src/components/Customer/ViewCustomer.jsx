@@ -57,20 +57,23 @@ const ViewCustomer = () => {
         </div>
 
         {/* Card */}
-        <div className="relative z-10 bg-white w-full px-14 py-10 shadow-xl rounded-t-[20px] overflow-auto" style={{ height: 'calc(100% - 70px)' }}>
+        <div
+          className="relative z-10 bg-white w-full px-7 py-3 shadow-xl rounded-t-[20px] overflow-auto"
+          style={{ height: 'calc(100% - 70px)' }}
+        >
 
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
             <div>
-                  <div className="flex  mt-4 gap-2">
-                    <input
-                      type="text"
-                      placeholder="Search customers..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
-                    />
-                  </div>
+              <div className="flex  mt-4 gap-2">
+                <input
+                  type="text"
+                  placeholder="Search customers..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent"
+                />
+              </div>
             </div>
 
             <div className="flex gap-2">

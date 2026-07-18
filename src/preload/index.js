@@ -69,10 +69,24 @@ contextBridge.exposeInMainWorld('api', {
   product: {
     create: (data) => ipcRenderer.invoke('product:create', data),
     getAll: () => ipcRenderer.invoke('product:getAll'),
+    getByStore: (storeId) => ipcRenderer.invoke('product:getByStore', storeId),
     getById: (id) => ipcRenderer.invoke('product:getById', id),
     update: (data) => ipcRenderer.invoke('product:update', data),
     delete: (id) => ipcRenderer.invoke('product:delete', id),
     updateStatus: (data) => ipcRenderer.invoke('product:updateStatus', data)
+  },
+  grn: {
+    create: (data) => ipcRenderer.invoke('grn:create', data),
+    update: (id, data) => ipcRenderer.invoke('grn:update', id, data),
+    getAll: () => ipcRenderer.invoke('grn:getAll'),
+    getById: (id) => ipcRenderer.invoke('grn:getById', id),
+    delete: (id) => ipcRenderer.invoke('grn:delete', id)
+  },
+  grnReturn: {
+    create: (data) => ipcRenderer.invoke('grnReturn:create', data),
+    getAll: () => ipcRenderer.invoke('grnReturn:getAll'),
+    getById: (id) => ipcRenderer.invoke('grnReturn:getById', id),
+    delete: (id) => ipcRenderer.invoke('grnReturn:delete', id)
   },
   settings: {
     getGeneral: () => ipcRenderer.invoke('settings:getGeneral'),

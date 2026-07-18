@@ -46,13 +46,13 @@ const ViewVariations = () => {
 
         {/* Card */}
         <div
-          className="relative z-10 bg-white w-full px-14 py-10 shadow-xl rounded-t-[20px] overflow-auto"
+          className="relative z-10 bg-white w-full px-7 py-[26px] shadow-xl rounded-t-[20px] overflow-auto"
           style={{ height: 'calc(100% - 70px)' }}
         >
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search variations..."
-            className="border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent" />
+              className="border-2 border-gray-400 rounded-lg focus:outline-none focus:border-[#1a6b7a] text-sm text-gray-700 placeholder-gray-400 p-3 w-80 bg-transparent" />
             <button onClick={() => navigate('/dashboard/products/variations/create')}
               className="bg-[#1a6b7a] border-2 border-[#1a6b7a] text-white text-md px-6 py-3 rounded-lg hover:opacity-90">+ Create Variation</button>
           </div>

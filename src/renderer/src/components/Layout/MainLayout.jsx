@@ -4,16 +4,20 @@ import Header from './Header'
 
 const MainLayout = () => {
   return (
-    <div className="fixed inset-0 flex bg-[#225166]">
+    <div className="fixed inset-0 flex bg-[#225166] overflow-hidden">
       <Sidebar />
 
-      <main className="flex-1 flex flex-col min-h-0">
-        <Header />
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <div className="relative z-10">
+          <Header />
+        </div>
 
-        <div className="flex-1 pb-0 overflow-y-auto">
+        {/* Page Content */}
+        <div className="flex-1 overflow-y-auto">
           <Outlet />
         </div>
-      </main>
+      </div>
     </div>
   )
 }
