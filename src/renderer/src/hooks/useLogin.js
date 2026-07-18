@@ -80,6 +80,10 @@ export const useLogin = () => {
       const res = await window.api.auth.login(payload)
 
       if (res?.success) {
+        // Persist the logged-in user + token so other parts of the app
+        // (e.g. attributing records like expenses to "added_by") can read it back.
+        localStorage.setItem('token', res.token || '')
+        localStorage.setItem('user', JSON.stringify(res.user || null))
         navigate('/dashboard')
       } else {
         if (res?.fieldErrors) {

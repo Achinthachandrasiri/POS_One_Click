@@ -122,7 +122,7 @@ const handleLogin = async (data) => {
     await user.resetFailedAttempts()
 
     const tokenPayload = {
-      id: user._id,
+      id: user._id.toString(),
       email: user.email,
       role: user.role,
       full_name: `${user.first_name} ${user.last_name}`
@@ -135,7 +135,7 @@ const handleLogin = async (data) => {
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user._id.toString(),
         first_name: user.first_name,
         last_name: user.last_name,
         email: user.email,

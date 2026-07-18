@@ -94,6 +94,20 @@ contextBridge.exposeInMainWorld('api', {
     getAll: (filters) => ipcRenderer.invoke('quotation:getAll', filters),
     getById: (id) => ipcRenderer.invoke('quotation:getById', id),
     delete: (id) => ipcRenderer.invoke('quotation:delete', id)
+  },
+  expense: {
+    create: (data) => ipcRenderer.invoke('expense:create', data),
+    update: (data) => ipcRenderer.invoke('expense:update', data),
+    getAll: () => ipcRenderer.invoke('expense:getAll'),
+    getById: (id) => ipcRenderer.invoke('expense:getById', id),
+    delete: (id, userId, userRole) => ipcRenderer.invoke('expense:delete', { id, userId, userRole })
+  },
+  service: {
+    create: (data) => ipcRenderer.invoke('service:create', data),
+    getAll: (params) => ipcRenderer.invoke('service:getAll', params),
+    getById: (id) => ipcRenderer.invoke('service:getById', id),
+    update: (data) => ipcRenderer.invoke('service:update', data),
+    delete: (id) => ipcRenderer.invoke('service:delete', id)
   }
 })
 

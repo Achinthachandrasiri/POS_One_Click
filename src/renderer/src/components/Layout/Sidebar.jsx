@@ -17,7 +17,8 @@ import {
   FiSettings,
   FiMail,
   FiRepeat,
-  FiFileText
+  FiFileText,
+  FiTool
 } from "react-icons/fi"
 
 const TreeLines = ({ itemCount }) => {
@@ -147,6 +148,15 @@ const Sidebar = () => {
           )}
         </div>
 
+        {/* Store */}
+        <button
+          onClick={() => navigate('/dashboard/stores')}
+          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+        >
+          <FiShoppingCart />
+          <span>Store</span>
+        </button>
+
         {/* Products — expandable */}
         <div>
           <button
@@ -180,13 +190,13 @@ const Sidebar = () => {
           )}
         </div>
 
-        {/* Store */}
+        {/* Services */}
         <button
-          onClick={() => navigate('/dashboard/stores')}
+          onClick={() => navigate('/dashboard/services')}
           className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
         >
-          <FiShoppingCart />
-          <span>Store</span>
+          <FiTool />
+          <span>Services</span>
         </button>
 
         <div>
