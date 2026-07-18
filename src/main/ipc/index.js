@@ -14,6 +14,8 @@ import { registerGRNReturnIpc } from './grn/grnReturn.ipc'
 import { registerQuotationIpc } from './quotation/quotation.ipc'
 import { registerExpenseIpc } from './expenses/expenses.ipc'
 import { registerServiceIpc } from './service/service.ipc'
+import { registerGeneralSettingsIpc } from './settings/generalSettings.ipc'
+import { registerMailSettingsIpc } from './settings/mailSettings.ipc'
 
 export const registerIpcHandlers = () => {
   registerAuthIpc()
@@ -32,5 +34,8 @@ export const registerIpcHandlers = () => {
   registerQuotationIpc()
   registerExpenseIpc()
   registerServiceIpc()
+  registerGeneralSettingsIpc()
+  registerMailSettingsIpc()
+
 
 }
