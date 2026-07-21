@@ -1,9 +1,20 @@
 import { resolve } from 'path'
 import { defineConfig } from 'electron-vite'
 import react from '@vitejs/plugin-react'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 export default defineConfig({
   main: {
+    plugins: [
+      viteStaticCopy({
+        targets: [
+          {
+            src: resolve(__dirname, 'src/main/license/public_key.pem'),
+            dest: '.'
+          }
+        ]
+      })
+    ],
     build: {
       rollupOptions: {
         input: {

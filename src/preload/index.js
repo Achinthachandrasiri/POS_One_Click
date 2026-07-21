@@ -109,11 +109,22 @@ contextBridge.exposeInMainWorld('api', {
     update: (data) => ipcRenderer.invoke('service:update', data),
     delete: (id) => ipcRenderer.invoke('service:delete', id)
   },
+  warrantyType: {
+    create: (data) => ipcRenderer.invoke('warrantyType:create', data),
+    getAll: () => ipcRenderer.invoke('warrantyType:getAll'),
+    getById: (id) => ipcRenderer.invoke('warrantyType:getById', id),
+    update: (data) => ipcRenderer.invoke('warrantyType:update', data),
+    delete: (id) => ipcRenderer.invoke('warrantyType:delete', id)
+  },
   settings: {
     getGeneral: () => ipcRenderer.invoke('settings:getGeneral'),
     saveGeneral: (data) => ipcRenderer.invoke('settings:saveGeneral', data),
     getMail: () => ipcRenderer.invoke('settings:getMail'),
     saveMail: (data) => ipcRenderer.invoke('settings:saveMail', data),
+  },
+  license: {
+    activate: (key) => ipcRenderer.invoke('license:activate', key),
+    check: () => ipcRenderer.invoke('license:check')
   }
 })
 
