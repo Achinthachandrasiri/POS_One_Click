@@ -3,6 +3,9 @@ import MainLayout from './components/Layout/MainLayout'
 import LoginPage from './components/Authentication/Login'
 import ResetPassword from './components/Authentication/ResetPassword'
 import DashboardPage from './components/Dashboard/DashboardPage'
+import useLicense from './hooks/useLicense'
+import ActivationScreen from './license/ActivationScreen'
+import LicenseCheckingScreen from './license/LicenseCheckingScreen'
 import CreateUser from './components/User/CreateUser'
 import ViewUser from './components/User/ViewUser'
 import CreateCustomer from './components/Customer/CreateCustomer'
@@ -34,7 +37,7 @@ import CreateGRN from './components/grn/CreateGRN'
 import EditGRN from './components/grn/EditGRN'
 import ViewGRN from './components/grn/ViewGRN'
 import CreateGRNReturn from './components/ReturnGRN/ReturnGRN'
-import ViewReturnGRN  from './components/ReturnGRN/ViewReturnGRN'
+import ViewReturnGRN from './components/ReturnGRN/ViewReturnGRN'
 import CreateQuotation from './components/Quotation/CreateQuotation'
 import ViewQuatation from './components/Quotation/ViewQuatation'
 import EditQuotation from './components/Quotation/EditQuotation'
@@ -46,8 +49,20 @@ import EditExpenses from './components/Expenses/EditExpenses'
 import CreateService from './components/Service/CreateService'
 import EditService from './components/Service/EditService'
 import ViewService from './components/Service/ViewService'
+import CreateWarranty from './components/Warranty/CreateWarranty'
+import EditWarranty from './components/Warranty/EditWarranty'
+import ViewWarranty from './components/Warranty/ViewWarranty'
 
 function App() {
+  const { isLicensed, checkLicense } = useLicense()
+
+  if (isLicensed === null) {
+    return <LicenseCheckingScreen />
+  }
+
+  if (isLicensed === false) {
+    return <ActivationScreen onActivated={checkLicense} />
+  }
   return (
     <Routes>
       {/* Auth routes (outside layout) */}
@@ -100,6 +115,9 @@ function App() {
         <Route path="services/edit/:id" element={<EditService />} />
         <Route path="settings/general" element={<GeneralSettings />} />
         <Route path="settings/mail" element={<MailSettings />} />
+        <Route path="warranty" element={<ViewWarranty />} />
+        <Route path="warranty/create" element={<CreateWarranty />} />
+        <Route path="warranty/edit/:id" element={<EditWarranty />} />
       </Route>
     </Routes>
   )
