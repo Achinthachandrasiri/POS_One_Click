@@ -19,7 +19,8 @@ import {
   FiRepeat,
   FiFileText,
   FiTool,
-  FiShield
+  FiShield,
+  FiLogOut
 } from "react-icons/fi"
 
 const TreeLines = ({ itemCount }) => {
@@ -69,6 +70,7 @@ const Sidebar = () => {
   const [peopleOpen, setPeopleOpen] = useState(false)
   const [productsOpen, setProductsOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [rolesOpen, setRolesOpen] = useState(false)
   const [stockInOpen, setStockInOpen] = useState(false)
 
   const subItems = [
@@ -258,6 +260,15 @@ const Sidebar = () => {
           <span>Expenses</span>
         </button>
 
+        {/* Roles & Permissions */}
+        <button
+          onClick={() => navigate('/dashboard/roles')}
+          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+        >
+          <FiShield />
+          <span>Roles & Permissions</span>
+        </button>
+
         {/* Settings — expandable */}
         <div>
           <button
@@ -298,7 +309,7 @@ const Sidebar = () => {
           onClick={() => navigate('/')}
           className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md w-full text-left"
         >
-          <span>🚪</span>
+          <FiLogOut />
           <span>Logout</span>
         </button>
       </div>

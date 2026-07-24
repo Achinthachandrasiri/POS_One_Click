@@ -43,6 +43,7 @@ import ViewQuatation from './components/Quotation/ViewQuatation'
 import EditQuotation from './components/Quotation/EditQuotation'
 import GeneralSettings from './components/Settings/GeneralSettings'
 import MailSettings from './components/Settings/MailSettings'
+import RolesPermissions from './components/RolesandPermission/rolesAndPermission'
 import CreateExpenses from './components/Expenses/CreateExpenses'
 import ViewExpenses from './components/Expenses/ViewExpenses'
 import EditExpenses from './components/Expenses/EditExpenses'
@@ -115,6 +116,7 @@ function App() {
         <Route path="services/edit/:id" element={<EditService />} />
         <Route path="settings/general" element={<GeneralSettings />} />
         <Route path="settings/mail" element={<MailSettings />} />
+        <Route path="roles" element={<RolesPermissions />} />
         <Route path="warranty" element={<ViewWarranty />} />
         <Route path="warranty/create" element={<CreateWarranty />} />
         <Route path="warranty/edit/:id" element={<EditWarranty />} />

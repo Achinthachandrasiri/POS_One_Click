@@ -11,7 +11,7 @@ const TEMP_ADMIN = {
   email: 'admin.hardwarepos@gmail.com',
   mobile: '0771234567',
   password: 'Admin@1234',
-  role: 'super_admin'
+  role: 'superAdmin'
 }
 
 const ensureTemporaryAdminUser = async () => {
@@ -73,9 +73,6 @@ const handleLogin = async (data) => {
   if (!password) {
     return { success: false, fieldErrors: { password: 'Password is required' } }
   }
-  if (password.length < 8) {
-    return { success: false, fieldErrors: { password: 'Password must be at least 8 characters' } }
-  }
 
   try {
     // Find User in DB _____________________________________________________________________________
@@ -91,6 +88,26 @@ const handleLogin = async (data) => {
         success: false,
         fieldErrors: {
           username: `Your account has been locked due to too many failed attempts. Contact an administrator.`
+        }
+      }
+    }
+    // Reject too-short passwords, but still count as a failed attempt ____________________________
+    if (password.length < 8) {
+      const { attempts, isLocked } = await user.incrementFailedAttempts()
+
+      if (isLocked) {
+        return {
+          success: false,
+          fieldErrors: {
+            password: `Too many failed attempts. Your account has been locked. Contact an administrator.`
+          }
+        }
+      }
+
+      return {
+        success: false,
+        fieldErrors: {
+          password: `${5 - attempts} attempt(s) remaining before lockout.`
         }
       }
     }

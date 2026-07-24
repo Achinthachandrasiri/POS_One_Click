@@ -10,7 +10,7 @@ import {
 
 export const registerUserIpc = () => {
   ipcMain.handle('user:create', async (_, data) => await handleCreateUser(data))
-  ipcMain.handle('user:getAll', async () => await handleGetAllUsers())
+  ipcMain.handle('user:getAll', async (_, requesterRole) => await handleGetAllUsers(requesterRole))
   ipcMain.handle('user:getById', async (_, id) => await handleGetUserById(id))
   ipcMain.handle('user:update', async (_, data) => await handleUpdateUser(data))
   ipcMain.handle('user:delete', async (_, id) => await handleDeleteUser(id))

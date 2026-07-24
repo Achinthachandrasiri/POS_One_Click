@@ -16,6 +16,7 @@ import { registerExpenseIpc } from './expenses/expenses.ipc'
 import { registerServiceIpc } from './service/service.ipc'
 import { registerGeneralSettingsIpc } from './settings/generalSettings.ipc'
 import { registerMailSettingsIpc } from './settings/mailSettings.ipc'
+import { registerRoleIpc } from './role/role.ipc'
 import { registerWarrantyTypeIpc } from './warranty/warranty.ipc'
 import {registerLicenseIpc} from './licenseIpc'
 
@@ -39,7 +40,7 @@ export const registerIpcHandlers = () => {
   registerServiceIpc()
   registerGeneralSettingsIpc()
   registerMailSettingsIpc()
+  registerRoleIpc()
   registerWarrantyTypeIpc()
-
 
 }

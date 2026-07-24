@@ -46,8 +46,6 @@ export const useLogin = () => {
     // Password validation
     if (!trimmedPassword) {
       errors.password = 'Password is required'
-    } else if (trimmedPassword.length < 8) {
-      errors.password = 'Password must be at least 8 characters'
     }
 
     setFieldErrors(errors)
@@ -79,12 +77,17 @@ export const useLogin = () => {
 
       const res = await window.api.auth.login(payload)
 
-      if (res?.success) {
-        // Persist the logged-in user + token so other parts of the app
-        // (e.g. attributing records like expenses to "added_by") can read it back.
-        localStorage.setItem('token', res.token || '')
-        localStorage.setItem('user', JSON.stringify(res.user || null))
-        navigate('/dashboard')
+if (res?.success) {
+  localStorage.setItem('token', res.token || '')
+  localStorage.setItem('user', JSON.stringify(res.user || null))
+
+  if (res?.user) {
+    localStorage.setItem('authUser', JSON.stringify(res.user))
+    localStorage.setItem('authRole', res.user.role || '')
+  }
+
+  navigate('/dashboard')
+}
       } else {
         if (res?.fieldErrors) {
           setFieldErrors(res.fieldErrors)

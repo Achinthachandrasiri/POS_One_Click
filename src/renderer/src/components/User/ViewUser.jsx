@@ -2,9 +2,11 @@ import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUserHooks } from '../../hooks/userHooks'
 
+const normalizeRoleName = (value) => value?.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
+
 const ViewUser = () => {
   const navigate = useNavigate()
-  const { getAllUsers, deleteUser, loading, error } = useUserHooks()
+  const { getAllUsers, deleteUser, loading, error, canSeeSuperAdmin } = useUserHooks()
   const [users, setUsers] = useState([])
   const [search, setSearch] = useState('')
 
@@ -31,13 +33,17 @@ const ViewUser = () => {
 
   const filteredUsers = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return users
-    return users.filter((u) =>
+    const visibleUsers = canSeeSuperAdmin
+      ? users
+      : users.filter((u) => normalizeRoleName(u.role) !== 'superadmin')
+
+    if (!q) return visibleUsers
+    return visibleUsers.filter((u) =>
       `${u.first_name} ${u.last_name} ${u.email} ${u.mobile} ${u.role}`
         .toLowerCase()
         .includes(q)
     )
-  }, [search, users])
+  }, [search, users, canSeeSuperAdmin])
 
   return (
     <div className="relative min-h-full px-8 pt-8 pb-0 overflow-hidden">
