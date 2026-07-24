@@ -9,12 +9,20 @@ import { registerCategoryIpc } from './product/category.ipc'
 import { registerVariationIpc } from './product/variation.ipc'
 import { registerUnitIpc } from './product/unit.ipc'
 import { registerProductIpc } from './product/product.ipc'
+import { registerGRNIpc } from './grn/grn.ipc'
+import { registerGRNReturnIpc } from './grn/grnReturn.ipc'
+import { registerQuotationIpc } from './quotation/quotation.ipc'
+import { registerExpenseIpc } from './expenses/expenses.ipc'
+import { registerServiceIpc } from './service/service.ipc'
 import { registerGeneralSettingsIpc } from './settings/generalSettings.ipc'
 import { registerMailSettingsIpc } from './settings/mailSettings.ipc'
 import { registerRoleIpc } from './role/role.ipc'
+import { registerWarrantyTypeIpc } from './warranty/warranty.ipc'
+import {registerLicenseIpc} from './licenseIpc'
 
 export const registerIpcHandlers = () => {
   registerAuthIpc()
+  registerLicenseIpc()
   registerUserIpc()
   registerResetPasswordIpc()
   registerCustomerIpc()
@@ -25,7 +33,14 @@ export const registerIpcHandlers = () => {
   registerVariationIpc()
   registerUnitIpc()
   registerProductIpc()
+  registerGRNIpc()
+  registerGRNReturnIpc()
+  registerQuotationIpc()
+  registerExpenseIpc()
+  registerServiceIpc()
   registerGeneralSettingsIpc()
   registerMailSettingsIpc()
   registerRoleIpc()
+  registerWarrantyTypeIpc()
+
 }

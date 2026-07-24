@@ -30,7 +30,7 @@ function createWindow() {
 
   Menu.setApplicationMenu(null)
   win.setMenuBarVisibility(false)
-  win.webContents.openDevTools()
+  //win.webContents.openDevTools()
   win.maximize()
 
   if (process.env.VITE_DEV_SERVER_URL) {

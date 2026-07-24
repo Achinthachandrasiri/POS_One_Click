@@ -3,6 +3,9 @@ import MainLayout from './components/Layout/MainLayout'
 import LoginPage from './components/Authentication/Login'
 import ResetPassword from './components/Authentication/ResetPassword'
 import DashboardPage from './components/Dashboard/DashboardPage'
+import useLicense from './hooks/useLicense'
+import ActivationScreen from './license/ActivationScreen'
+import LicenseCheckingScreen from './license/LicenseCheckingScreen'
 import CreateUser from './components/User/CreateUser'
 import ViewUser from './components/User/ViewUser'
 import CreateCustomer from './components/Customer/CreateCustomer'
@@ -30,11 +33,37 @@ import EditUnit from './components/Unit/EditUnit'
 import ViewProduct from './components/Product/ViewProduct'
 import CreateProduct from './components/Product/CreateProduct'
 import EditProduct from './components/Product/EditProduct'
+import CreateGRN from './components/grn/CreateGRN'
+import EditGRN from './components/grn/EditGRN'
+import ViewGRN from './components/grn/ViewGRN'
+import CreateGRNReturn from './components/ReturnGRN/ReturnGRN'
+import ViewReturnGRN from './components/ReturnGRN/ViewReturnGRN'
+import CreateQuotation from './components/Quotation/CreateQuotation'
+import ViewQuatation from './components/Quotation/ViewQuatation'
+import EditQuotation from './components/Quotation/EditQuotation'
 import GeneralSettings from './components/Settings/GeneralSettings'
 import MailSettings from './components/Settings/MailSettings'
 import RolesPermissions from './components/RolesandPermission/rolesAndPermission'
+import CreateExpenses from './components/Expenses/CreateExpenses'
+import ViewExpenses from './components/Expenses/ViewExpenses'
+import EditExpenses from './components/Expenses/EditExpenses'
+import CreateService from './components/Service/CreateService'
+import EditService from './components/Service/EditService'
+import ViewService from './components/Service/ViewService'
+import CreateWarranty from './components/Warranty/CreateWarranty'
+import EditWarranty from './components/Warranty/EditWarranty'
+import ViewWarranty from './components/Warranty/ViewWarranty'
 
 function App() {
+  const { isLicensed, checkLicense } = useLicense()
+
+  if (isLicensed === null) {
+    return <LicenseCheckingScreen />
+  }
+
+  if (isLicensed === false) {
+    return <ActivationScreen onActivated={checkLicense} />
+  }
   return (
     <Routes>
       {/* Auth routes (outside layout) */}
@@ -71,9 +100,26 @@ function App() {
         <Route path="products" element={<ViewProduct />} />
         <Route path="products/create" element={<CreateProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
+        <Route path="grn" element={<ViewGRN />} />
+        <Route path="grn/create" element={<CreateGRN />} />
+        <Route path="grn/edit/:id" element={<EditGRN />} />
+        <Route path="grn/return/:id" element={<CreateGRNReturn />} />
+        <Route path="grn/return" element={<ViewReturnGRN />} />
+        <Route path="quotation" element={<ViewQuatation />} />
+        <Route path="quotation/create" element={<CreateQuotation />} />
+        <Route path="quotation/edit/:id" element={<EditQuotation />} />
+        <Route path="expenses" element={<ViewExpenses />} />
+        <Route path="expenses/create" element={<CreateExpenses />} />
+        <Route path="expenses/edit/:id" element={<EditExpenses />} />
+        <Route path="services" element={<ViewService />} />
+        <Route path="services/create" element={<CreateService />} />
+        <Route path="services/edit/:id" element={<EditService />} />
         <Route path="settings/general" element={<GeneralSettings />} />
         <Route path="settings/mail" element={<MailSettings />} />
         <Route path="roles" element={<RolesPermissions />} />
+        <Route path="warranty" element={<ViewWarranty />} />
+        <Route path="warranty/create" element={<CreateWarranty />} />
+        <Route path="warranty/edit/:id" element={<EditWarranty />} />
       </Route>
     </Routes>
   )

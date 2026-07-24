@@ -1,0 +1,587 @@
+import { useState, useEffect, useMemo } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+
+// ─────────────────────────────────────────────────────────────
+// LINE TOTAL HELPERS — duplicated locally (same convention as
+// useCreateQuotation.js / useEditGRN.js), always priced off the
+// quoted price, never cost.
+// ─────────────────────────────────────────────────────────────
+export const calcLineTotal = (price, quantity, discount_type, discount_value) => {
+  let total = (price || 0) * (quantity || 0)
+  if (discount_type === 'percent' && discount_value) total -= total * (discount_value / 100)
+  else if (discount_type === 'fixed' && discount_value) total -= discount_value
+  return Math.max(total, 0)
+}
+
+export const num = (v) => (v === '' || v == null ? null : Number(v))
+
+// ─────────────────────────────────────────────────────────────
+// WHOLE-BILL TOTALS — subtotal (sum of line totals), then order-level
+// discount, then tax %, then flat shipping, in that order.
+// ─────────────────────────────────────────────────────────────
+export const calcOrderTotals = (subtotal, form) => {
+  const discountAmount = form.discount_type === 'percent'
+    ? subtotal * ((num(form.discount_value) || 0) / 100)
+    : form.discount_type === 'fixed'
+      ? (num(form.discount_value) || 0)
+      : 0
+  const afterDiscount = Math.max(subtotal - discountAmount, 0)
+  const taxAmount = afterDiscount * ((num(form.tax) || 0) / 100)
+  const shippingAmount = num(form.shipping) || 0
+  const grandTotal = afterDiscount + taxAmount + shippingAmount
+
+  return { subtotal, discountAmount, afterDiscount, taxAmount, shippingAmount, grandTotal }
+}
+
+// ─────────────────────────────────────────────────────────────
+// A product line added to the quotation table (mirrors
+// useCreateQuotation's initialProductLine for newly-added products)
+// ─────────────────────────────────────────────────────────────
+export const initialProductLine = (product, variation = null) => {
+  const isVariable = product.structure === 'variable'
+  const isBatch = product.batch_tracking
+
+  const singleVar = !isVariable ? product.variations?.[0] : null
+  const targetVar = variation || singleVar
+
+  const existingStock = targetVar && !isBatch ? (targetVar.stock ?? 0) : null
+  const existingBatches = targetVar && isBatch ? (targetVar.batches || []) : []
+
+  return {
+    product_id: product._id,
+    product_name: product.name,
+    product_code: product.code,
+    structure: product.structure,
+    batch_tracking: isBatch,
+    variation_id: variation?._id || '',
+    variation_name: variation?.name || '',
+    _variationOptions: isVariable
+      ? product.variations.map((v) => ({
+        _id: v._id,
+        name: v.name,
+        stock: v.stock,
+        batches: v.batches,
+        cost: v.cost,
+        price: v.price,
+        wholesale_price: v.wholesale_price,
+        discount_type: v.discount_type,
+        discount_value: v.discount_value
+      }))
+      : [],
+
+    _existingStock: existingStock,
+    _existingBatches: existingBatches,
+
+    cost: !isBatch ? (targetVar?.cost ?? '') : '',
+    price: !isBatch ? (targetVar?.price ?? '') : '',
+    _wholesalePrice: targetVar?.wholesale_price ?? product?.wholesale_price ?? null,
+
+    quantity: '',
+    batches: [],
+
+    // The product's own discount, carried read-only — never set by the user here.
+    discount_type: !isBatch ? (targetVar?.discount_type || 'none') : 'none',
+    discount_value: !isBatch ? (targetVar?.discount_value ?? '') : '',
+
+    wholesale_enabled: false
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Maps a server-saved quotation line back into the editable shape
+// the table/modal expect, cross-referencing the live product so
+// variation options / current stock / wholesale price / discount stay accurate.
+// ─────────────────────────────────────────────────────────────
+export const mapServerLineToEditable = (serverLine, allProducts) => {
+  const productId = typeof serverLine.product_id === 'object' ? serverLine.product_id?._id : serverLine.product_id
+  const product = allProducts.find((p) => p._id === productId)
+  const isVariable = serverLine.structure === 'variable'
+  const variation = product
+    ? (isVariable ? product.variations?.find((v) => v._id === serverLine.variation_id) : product.variations?.[0])
+    : null
+
+  const existingBatches = variation && serverLine.batch_tracking ? (variation.batches || []) : []
+
+  return {
+    product_id: productId,
+    product_name: serverLine.product_name,
+    product_code: product?.code || serverLine.product_id?.code || '',
+    structure: serverLine.structure,
+    batch_tracking: serverLine.batch_tracking,
+    variation_id: serverLine.variation_id || '',
+    variation_name: serverLine.variation_name || '',
+    _variationOptions: product && isVariable
+      ? product.variations.map((v) => ({
+        _id: v._id, name: v.name, stock: v.stock, batches: v.batches, cost: v.cost, price: v.price,
+        wholesale_price: v.wholesale_price, discount_type: v.discount_type, discount_value: v.discount_value
+      }))
+      : [],
+    _existingStock: variation && !serverLine.batch_tracking ? (variation.stock ?? 0) : null,
+    _existingBatches: existingBatches,
+    // Non-batch: cost is carried silently from the live variation (fallback to the saved
+    // snapshot); price is the quoted price and stays editable.
+    cost: !serverLine.batch_tracking ? (variation?.cost ?? serverLine.cost ?? '') : '',
+    price: !serverLine.batch_tracking ? (serverLine.price ?? variation?.price ?? '') : '',
+    _wholesalePrice: variation?.wholesale_price ?? product?.wholesale_price ?? null,
+    quantity: !serverLine.batch_tracking ? (serverLine.quantity ?? '') : '',
+    // Discount is the product's own — prefer the live variation's current discount,
+    // same as cost/price above, falling back to what was saved on the quotation.
+    discount_type: !serverLine.batch_tracking ? (variation?.discount_type ?? serverLine.discount_type ?? 'none') : 'none',
+    discount_value: !serverLine.batch_tracking ? (variation?.discount_value ?? serverLine.discount_value ?? '') : '',
+    wholesale_enabled: serverLine.wholesale_enabled || false,
+    batches: serverLine.batch_tracking
+      ? (serverLine.batches || []).map((b) => {
+        // A quotation never touches stock, so the live batch (if it still
+        // exists) is the source of truth for how much is actually available,
+        // and for the batch's own (non-editable) discount.
+        const liveBatch = existingBatches.find((eb) => eb.batch_number === b.batch_number)
+        return {
+          batch_number: b.batch_number || '',
+          cost: b.cost ?? liveBatch?.cost ?? '',
+          price: b.price ?? '',
+          discount_type: liveBatch?.discount_type ?? b.discount_type ?? 'none',
+          discount_value: liveBatch?.discount_value ?? b.discount_value ?? '',
+          quantity: b.quantity ?? '',
+          expiry_date: (liveBatch?.expiry_date || b.expiry_date) ? String(liveBatch?.expiry_date || b.expiry_date).slice(0, 10) : '',
+          _availableStock: liveBatch?.stock ?? 0
+        }
+      })
+      : []
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// CLIENT-SIDE VALIDATION — identical rules to useCreateQuotation.js
+// ─────────────────────────────────────────────────────────────
+export const validateQuotationForm = (form) => {
+  const errors = {}
+
+  if (!form.customer_id) errors.customer_id = 'Please select a customer'
+  if (!form.date) errors.date = 'Quotation date is required'
+  if (!form.quotation_number?.trim()) errors.quotation_number = 'Quotation number is required'
+
+  if (form.discount_type === 'percent' && num(form.discount_value) > 100) {
+    errors.discount_value = 'Discount cannot exceed 100%'
+  }
+  if (form.tax !== '' && form.tax != null && num(form.tax) < 0) {
+    errors.tax = 'Tax cannot be negative'
+  }
+  if (form.shipping !== '' && form.shipping != null && num(form.shipping) < 0) {
+    errors.shipping = 'Shipping cannot be negative'
+  }
+
+  if (!form.products || form.products.length === 0) {
+    errors.products = 'Add at least one product before saving'
+    return errors
+  }
+
+  form.products.forEach((line, i) => {
+    const prefix = `products[${i}]`
+
+    if (line.structure === 'variable' && !line.variation_id) {
+      errors[`${prefix}.variation_id`] = `${line.product_name}: please select a variation`
+    }
+
+    if (!line.batch_tracking) {
+      const q = num(line.quantity)
+      if (q === null || q <= 0) {
+        errors[`${prefix}.quantity`] = `${line.product_name}: quantity must be greater than 0`
+      }
+      const price = num(line.price)
+      if (price === null || price < 0) {
+        errors[`${prefix}.price`] = `${line.product_name}: price is required`
+      }
+    } else {
+      if (!line.batches || line.batches.length === 0) {
+        errors[`${prefix}.batches`] = `${line.product_name}: select at least one batch to quote`
+      } else {
+        const seen = []
+        line.batches.forEach((b, j) => {
+          const bp = `${prefix}.batches[${j}]`
+          if (!b.batch_number?.trim()) {
+            errors[`${bp}.batch_number`] = `${line.product_name}, batch ${j + 1}: batch is required`
+          } else {
+            const key = b.batch_number.trim().toLowerCase()
+            if (seen.includes(key)) {
+              errors[`${bp}.batch_number`] = `${line.product_name}, batch ${j + 1}: duplicate batch "${b.batch_number}"`
+            }
+            seen.push(key)
+          }
+          const price = num(b.price)
+          if (price === null || price < 0) {
+            errors[`${bp}.price`] = `${line.product_name}, batch ${j + 1}: price is required`
+          }
+          const qty = num(b.quantity)
+          if (qty === null || qty <= 0) {
+            errors[`${bp}.quantity`] = `${line.product_name}, batch ${j + 1}: quantity must be greater than 0`
+          } else if (b._availableStock != null && qty > b._availableStock) {
+            errors[`${bp}.quantity`] = `${line.product_name}, batch ${j + 1}: only ${b._availableStock} in stock`
+          }
+        })
+      }
+    }
+  })
+
+  return errors
+}
+
+// ─────────────────────────────────────────────────────────────
+// HOOK: all state, effects and handlers for EditQuotation
+// ─────────────────────────────────────────────────────────────
+export const useEditQuotation = () => {
+  const { id } = useParams()
+  const navigate = useNavigate()
+
+  const [form, setForm] = useState(null) // null until loaded
+  const [locked, setLocked] = useState({ storeName: '' })
+  const [allProducts, setAllProducts] = useState([])
+  const [dropdowns, setDropdowns] = useState({ customers: [] })
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [error, setError] = useState('')
+  const [batchModal, setBatchModal] = useState(null)
+  const [pageLoading, setPageLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  // ── load the quotation + customers + this store's product catalog ──
+  useEffect(() => {
+    const load = async () => {
+      setPageLoading(true)
+      setError('')
+      try {
+        const [quoRes, customersRes] = await Promise.all([
+          window.api.quotation.getById(id),
+          window.api.customer.getAll()
+        ])
+
+        if (!quoRes?.success || !quoRes.data) {
+          setError(quoRes?.error || quoRes?.message || 'Failed to load this quotation.')
+          return
+        }
+
+        setDropdowns({ customers: customersRes?.customers || customersRes?.data || [] })
+
+        const quo = quoRes.data
+        const storeId = quo.store_id?._id || quo.store_id
+
+        setLocked({ storeName: quo.store_id?.storeName || quo.store_id?.name || '—' })
+
+        const productsRes = await window.api.product.getByStore(storeId)
+        const all = (productsRes?.products || productsRes?.data || []).filter((p) => p.status === 'active')
+        setAllProducts(all)
+
+        setForm({
+          store_id: storeId,
+          customer_id: quo.customer_id?._id || quo.customer_id,
+          date: quo.date ? String(quo.date).slice(0, 10) : '',
+          quotation_number: quo.quotation_number || '',
+          discount_type: quo.discount_type || 'none',
+          discount_value: quo.discount_value ?? '',
+          tax: quo.tax ?? '',
+          shipping: quo.shipping ?? '',
+          products: (quo.products || []).map((line) => mapServerLineToEditable(line, all))
+        })
+      } catch (e) {
+        console.error('Failed to load quotation for edit', e)
+        setError('Something went wrong while loading this quotation.')
+      } finally {
+        setPageLoading(false)
+      }
+    }
+    load()
+  }, [id])
+
+  // ── top-level field update (store is locked, so it never changes here) ──
+  const updateForm = (key, val) => {
+    setForm((prev) => ({ ...prev, [key]: val }))
+    if (fieldErrors[key]) setFieldErrors((prev) => { const e = { ...prev }; delete e[key]; return e })
+  }
+
+  // ── add product from search ──
+  const handleAddProduct = (product) => {
+    const alreadyAdded = form.products.some(
+      (l) => l.product_id === product._id && product.structure === 'single'
+    )
+    if (alreadyAdded) return
+
+    if (product.batch_tracking) {
+      const isVariable = product.structure === 'variable'
+      setBatchModal({
+        mode: 'create',
+        lineIdx: null,
+        product,
+        structure: product.structure,
+        productName: product.name,
+        productCode: product.code,
+        variationOptions: isVariable
+          ? product.variations.map((v) => ({ _id: v._id, name: v.name, stock: v.stock, batches: v.batches }))
+          : [],
+        singleExistingBatches: !isVariable ? (product.variations?.[0]?.batches || []) : [],
+        variationId: '',
+        batches: []
+      })
+      return
+    }
+
+    const newLine = initialProductLine(product)
+    setForm((prev) => ({ ...prev, products: [...prev.products, newLine] }))
+  }
+
+  const removeProductLine = (idx) => {
+    setForm((prev) => ({ ...prev, products: prev.products.filter((_, i) => i !== idx) }))
+    setFieldErrors((prev) => {
+      const e = { ...prev }
+      Object.keys(e).forEach((k) => { if (k.startsWith(`products[${idx}]`)) delete e[k] })
+      return e
+    })
+  }
+
+  const updateProductLine = (idx, key, val) => {
+    setForm((prev) => {
+      const lines = [...prev.products]
+      lines[idx] = { ...lines[idx], [key]: val }
+      return { ...prev, products: lines }
+    })
+    const errKey = `products[${idx}].${key}`
+    if (fieldErrors[errKey]) setFieldErrors((prev) => { const e = { ...prev }; delete e[errKey]; return e })
+  }
+
+  // ── toggle wholesale pricing on a non-batch line ──
+  const toggleWholesale = (idx) => {
+    setForm((prev) => {
+      const lines = [...prev.products]
+      const line = lines[idx]
+      const next = !line.wholesale_enabled
+      lines[idx] = {
+        ...line,
+        wholesale_enabled: next,
+        price: next && line._wholesalePrice != null ? line._wholesalePrice : line.price
+      }
+      return { ...prev, products: lines }
+    })
+  }
+
+  // ── variation selection (non-batch lines only) ──
+  const onSelectVariation = (idx, variationId) => {
+    setForm((prev) => {
+      const lines = [...prev.products]
+      const opt = lines[idx]._variationOptions.find((v) => v._id === variationId)
+      lines[idx] = {
+        ...lines[idx],
+        variation_id: variationId,
+        variation_name: opt?.name || '',
+        _existingStock: opt?.stock ?? 0,
+        cost: opt?.cost ?? '',
+        price: opt?.price ?? '',
+        _wholesalePrice: opt?.wholesale_price ?? null,
+        discount_type: opt?.discount_type || 'none',
+        discount_value: opt?.discount_value ?? ''
+      }
+      return { ...prev, products: lines }
+    })
+    const errKey = `products[${idx}].variation_id`
+    if (fieldErrors[errKey]) setFieldErrors((prev) => { const e = { ...prev }; delete e[errKey]; return e })
+  }
+
+  const openManageBatches = (idx) => {
+    const line = form.products[idx]
+    setBatchModal({
+      mode: 'edit',
+      lineIdx: idx,
+      product: null,
+      structure: line.structure,
+      productName: line.product_name,
+      productCode: line.product_code,
+      variationOptions: line._variationOptions,
+      singleExistingBatches: line.structure === 'single' ? line._existingBatches : [],
+      variationId: line.variation_id,
+      batches: line.batches
+    })
+  }
+
+  const closeBatchModal = () => setBatchModal(null)
+
+  const handleBatchModalSave = (groups) => {
+    if (batchModal.mode === 'create') {
+      const isVariable = batchModal.structure === 'variable'
+      const newLines = groups.map(({ variationId, variationName, batches }) => {
+        const variation = isVariable
+          ? batchModal.product.variations.find((v) => v._id === variationId)
+          : null
+        const newLine = initialProductLine(batchModal.product, variation)
+        newLine.batches = batches
+        newLine.variation_id = variationId
+        newLine.variation_name = variationName
+        return newLine
+      })
+      setForm((prev) => ({ ...prev, products: [...prev.products, ...newLines] }))
+    } else {
+      const { variationId, variationName, batches } = groups[0] || { variationId: '', variationName: '', batches: [] }
+      setForm((prev) => {
+        const lines = [...prev.products]
+        const idx = batchModal.lineIdx
+        const isVariable = lines[idx].structure === 'variable'
+        const opt = isVariable ? lines[idx]._variationOptions.find((v) => v._id === variationId) : null
+        lines[idx] = {
+          ...lines[idx],
+          ...(isVariable ? {
+            variation_id: variationId,
+            variation_name: opt?.name || variationName,
+            _existingBatches: opt?.batches || []
+          } : {}),
+          batches
+        }
+        return { ...prev, products: lines }
+      })
+    }
+    setBatchModal(null)
+  }
+
+  // ── live subtotal (sum of line totals) — always priced, never cost ──
+  const subtotal = useMemo(() => {
+    if (!form) return 0
+    return form.products.reduce((sum, line) => {
+      if (!line.batch_tracking) {
+        return sum + calcLineTotal(num(line.price), num(line.quantity), line.discount_type, num(line.discount_value))
+      }
+      return sum + line.batches.reduce(
+        (bSum, b) => bSum + calcLineTotal(num(b.price), num(b.quantity), b.discount_type, num(b.discount_value)),
+        0
+      )
+    }, 0)
+  }, [form])
+
+  // ── whole-bill totals: subtotal → order discount → tax → shipping ──
+  const totals = useMemo(() => form ? calcOrderTotals(subtotal, form) : { subtotal: 0, discountAmount: 0, afterDiscount: 0, taxAmount: 0, shippingAmount: 0, grandTotal: 0 },
+    [subtotal, form?.discount_type, form?.discount_value, form?.tax, form?.shipping])
+  const grandTotal = totals.grandTotal
+
+  // ── scroll to and briefly highlight the first field referenced by a field-error key ──
+  const scrollToFirstError = (errors) => {
+    const keys = Object.keys(errors)
+    if (keys.length === 0) return
+
+    const anchorFor = (key) => key.includes('.batches') ? key.replace(/\.batches\[\d+\].*/, '.batches') : key
+    const candidates = keys
+      .map((key) => ({ key, anchorKey: anchorFor(key), el: document.querySelector(`[data-field-key="${anchorFor(key)}"]`) }))
+      .filter((c) => c.el)
+
+    if (candidates.length === 0) return
+    candidates.sort((a, b) => a.el.getBoundingClientRect().top - b.el.getBoundingClientRect().top)
+    const { el } = candidates[0]
+
+    requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.classList.add('grn-error-flash')
+      setTimeout(() => el.classList.remove('grn-error-flash'), 1600)
+    })
+  }
+
+  // ── submit ──
+  const handleSubmit = async () => {
+    setError('')
+
+    const clientErrors = validateQuotationForm(form)
+    if (Object.keys(clientErrors).length > 0) {
+      setFieldErrors(clientErrors)
+      setError(`Please fix ${Object.keys(clientErrors).length === 1 ? 'the highlighted issue' : `the ${Object.keys(clientErrors).length} highlighted issues`} before saving.`)
+      scrollToFirstError(clientErrors)
+      return
+    }
+
+    setFieldErrors({})
+    setSaving(true)
+
+    const payload = {
+      quotation_number: form.quotation_number,
+      customer_id: form.customer_id,
+      date: form.date,
+      discount_type: form.discount_type,
+      discount_value: form.discount_type !== 'none' ? num(form.discount_value) : null,
+      tax: num(form.tax) || 0,
+      shipping: num(form.shipping) || 0,
+      grand_total: grandTotal,
+      products: form.products.map((line) => ({
+        product_id: line.product_id,
+        product_name: line.product_name,
+        structure: line.structure,
+        variation_id: line.structure === 'variable' ? line.variation_id : null,
+        variation_name: line.structure === 'variable' ? line.variation_name : null,
+        batch_tracking: line.batch_tracking,
+        wholesale_enabled: line.wholesale_enabled,
+        cost: !line.batch_tracking ? num(line.cost) : null,
+        price: !line.batch_tracking ? num(line.price) : null,
+        quantity: !line.batch_tracking ? num(line.quantity) : null,
+        discount_type: !line.batch_tracking ? (line.discount_type || 'none') : 'none',
+        discount_value: !line.batch_tracking && line.discount_type !== 'none' ? num(line.discount_value) : null,
+        line_total: !line.batch_tracking
+          ? calcLineTotal(num(line.price), num(line.quantity), line.discount_type, num(line.discount_value))
+          : line.batches.reduce((s, b) => s + calcLineTotal(num(b.price), num(b.quantity), b.discount_type, num(b.discount_value)), 0),
+        batches: line.batch_tracking
+          ? line.batches.map((b) => ({
+            batch_number: b.batch_number,
+            cost: num(b.cost),
+            price: num(b.price),
+            quantity: num(b.quantity),
+            discount_type: b.discount_type || 'none',
+            discount_value: b.discount_type && b.discount_type !== 'none' ? num(b.discount_value) : null,
+            expiry_date: b.expiry_date || null
+          }))
+          : []
+        // UI-only fields (_variationOptions, _existingStock, _wholesalePrice, etc.) intentionally omitted
+      }))
+    }
+
+    try {
+      const res = await window.api.quotation.update(id, payload)
+      if (res?.success) {
+        navigate('/dashboard/quotation')
+      } else {
+        const serverFieldErrors = res?.fieldErrors || {}
+        setFieldErrors(serverFieldErrors)
+        const count = Object.keys(serverFieldErrors).length
+        if (count > 0) {
+          setError(res?.error || res?.message || `Please fix ${count === 1 ? 'the highlighted issue' : `the ${count} highlighted issues`} before saving.`)
+          scrollToFirstError(serverFieldErrors)
+        } else {
+          setError(res?.error || res?.message || 'Something went wrong while updating the quotation. Please try again.')
+        }
+      }
+    } catch (e) {
+      console.error('Quotation update failed', e)
+      if (e?.message === 'Failed to fetch' || e?.name === 'TypeError' || !navigator.onLine) {
+        setError('Could not connect to the server. Please check your internet connection and try again.')
+      } else {
+        setError('Something went wrong while updating the quotation. Please try again.')
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return {
+    navigate,
+    form,
+    locked,
+    allProducts,
+    dropdowns,
+    fieldErrors,
+    error,
+    batchModal,
+    pageLoading,
+    saving,
+    updateForm,
+    handleAddProduct,
+    removeProductLine,
+    updateProductLine,
+    toggleWholesale,
+    onSelectVariation,
+    openManageBatches,
+    closeBatchModal,
+    handleBatchModalSave,
+    subtotal,
+    totals,
+    grandTotal,
+    scrollToFirstError,
+    handleSubmit
+  }
+}

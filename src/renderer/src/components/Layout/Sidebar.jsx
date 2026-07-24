@@ -16,6 +16,9 @@ import {
   FiPackage,
   FiSettings,
   FiMail,
+  FiRepeat,
+  FiFileText,
+  FiTool,
   FiShield,
   FiLogOut
 } from "react-icons/fi"
@@ -68,6 +71,7 @@ const Sidebar = () => {
   const [productsOpen, setProductsOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [rolesOpen, setRolesOpen] = useState(false)
+  const [stockInOpen, setStockInOpen] = useState(false)
 
   const subItems = [
     { label: 'Users', icon: <FiUser />, path: '/dashboard/users' },
@@ -86,6 +90,11 @@ const Sidebar = () => {
   const settingsSubItems = [
     { label: 'General Settings', icon: <FiSliders />, path: '/dashboard/settings/general' },
     { label: 'Mail Settings', icon: <FiMail />, path: '/dashboard/settings/mail' },
+  ]
+
+  const stockInSubItems = [
+    { label: 'Stock In', icon: <FiBox />, path: '/dashboard/grn' },
+    { label: 'Return Stock', icon: <FiRepeat />, path: '/dashboard/grn/return' },
   ]
 
   return (
@@ -142,6 +151,15 @@ const Sidebar = () => {
           )}
         </div>
 
+        {/* Store */}
+        <button
+          onClick={() => navigate('/dashboard/stores')}
+          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+        >
+          <FiShoppingCart />
+          <span>Store</span>
+        </button>
+
         {/* Products — expandable */}
         <div>
           <button
@@ -175,13 +193,62 @@ const Sidebar = () => {
           )}
         </div>
 
-        {/* Store */}
+        {/* Services */}
         <button
-          onClick={() => navigate('/dashboard/stores')}
+          onClick={() => navigate('/dashboard/services')}
           className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
         >
-          <FiShoppingCart />
-          <span>Store</span>
+          <FiTool />
+          <span>Services</span>
+        </button>
+
+        {/* Warranty */}
+        <button
+          onClick={() => navigate('/dashboard/warranty')}
+          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+        >
+          <FiShield />
+          <span>Warranty</span>
+        </button>
+
+        <div>
+          <button
+            onClick={() => setStockInOpen(!stockInOpen)}
+            className="flex items-center justify-between w-full px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+          >
+            <div className="flex items-center gap-3">
+              <FiRepeat />
+              <span>Stock In</span>
+            </div>
+            <span className="text-md">
+              {stockInOpen ? <FiChevronDown /> : <FiChevronRight />}
+            </span>
+          </button>
+
+          {stockInOpen && (
+            <div className="relative flex flex-col mt-1 ml-6 gap-0">
+              <TreeLines itemCount={stockInSubItems.length} />
+              {stockInSubItems.map((item, i) => (
+                <button
+                  key={i}
+                  onClick={() => navigate(item.path)}
+                  className="relative flex items-center gap-3 pl-9 pr-3 py-2.5 text-[15px] text-[#ffffff] hover:text-white hover:bg-[#0e5a6a] rounded-md text-left"
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Quotation */}
+        <button
+          onClick={() => navigate('/dashboard/quotation')}
+          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+        >
+          <FiFileText />
+          <span>Quotation</span>
         </button>
 
         {/* Expenses */}

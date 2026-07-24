@@ -77,12 +77,17 @@ export const useLogin = () => {
 
       const res = await window.api.auth.login(payload)
 
-      if (res?.success) {
-        if (res?.user) {
-          localStorage.setItem('authUser', JSON.stringify(res.user))
-          localStorage.setItem('authRole', res.user.role || '')
-        }
-        navigate('/dashboard')
+if (res?.success) {
+  localStorage.setItem('token', res.token || '')
+  localStorage.setItem('user', JSON.stringify(res.user || null))
+
+  if (res?.user) {
+    localStorage.setItem('authUser', JSON.stringify(res.user))
+    localStorage.setItem('authRole', res.user.role || '')
+  }
+
+  navigate('/dashboard')
+}
       } else {
         if (res?.fieldErrors) {
           setFieldErrors(res.fieldErrors)

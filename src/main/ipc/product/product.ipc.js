@@ -5,7 +5,8 @@ import {
   handleGetProductById,
   handleUpdateProduct,
   handleDeleteProduct,
-  handleUpdateProductStatus
+  handleUpdateProductStatus,
+  handleGetProductsByStore
 } from '../../controllers/productsController/productController'
 
 export const registerProductIpc = () => {
@@ -57,6 +58,15 @@ export const registerProductIpc = () => {
   ipcMain.handle('product:updateStatus', async (_, data) => {
     try {
       return await handleUpdateProductStatus(data)
+    } catch (err) {
+      console.error('IPC product:updateStatus error:', err)
+      return { success: false, error: 'Failed to update product status' }
+    }
+  })
+
+  ipcMain.handle('product:getByStore', async (_, storeId) => {
+    try {
+      return await handleGetProductsByStore(storeId)
     } catch (err) {
       console.error('IPC product:updateStatus error:', err)
       return { success: false, error: 'Failed to update product status' }

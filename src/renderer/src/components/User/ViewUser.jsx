@@ -63,7 +63,10 @@ const ViewUser = () => {
         </div>
 
         {/* Card */}
-        <div className="relative z-10 bg-white w-full px-14 py-10 shadow-xl rounded-t-[20px] overflow-auto" style={{ height: 'calc(100% - 70px)' }}>
+        <div
+          className="relative z-10 bg-white w-full px-[28px] py-3 shadow-xl rounded-t-[20px] overflow-auto"
+          style={{ height: 'calc(100% - 70px)' }}
+        >
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
             <div>
