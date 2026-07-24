@@ -46,8 +46,6 @@ export const useLogin = () => {
     // Password validation
     if (!trimmedPassword) {
       errors.password = 'Password is required'
-    } else if (trimmedPassword.length < 8) {
-      errors.password = 'Password must be at least 8 characters'
     }
 
     setFieldErrors(errors)
@@ -80,6 +78,10 @@ export const useLogin = () => {
       const res = await window.api.auth.login(payload)
 
       if (res?.success) {
+        if (res?.user) {
+          localStorage.setItem('authUser', JSON.stringify(res.user))
+          localStorage.setItem('authRole', res.user.role || '')
+        }
         navigate('/dashboard')
       } else {
         if (res?.fieldErrors) {

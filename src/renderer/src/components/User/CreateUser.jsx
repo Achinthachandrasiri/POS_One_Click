@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUserHooks } from '../../hooks/userHooks'
 
+const normalizeRoleName = (value) => value?.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
+
 const CreateUserPage = () => {
   const navigate = useNavigate()
-  const { loading, error, fieldErrors, setError, handleChange, createUser } = useUserHooks()
+  const { loading, error, fieldErrors, setError, handleChange, createUser, getAllRoles, roles, canSeeSuperAdmin } = useUserHooks()
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
@@ -17,8 +19,15 @@ const CreateUserPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [success, setSuccess] = useState('')
 
+  useEffect(() => {
+    getAllRoles()
+  }, [getAllRoles])
+
   // Correct way to use handleChange from hook
   const onChange = handleChange(setForm)
+  const visibleRoles = canSeeSuperAdmin
+    ? roles
+    : roles.filter((role) => normalizeRoleName(role.name) !== 'superadmin')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -130,10 +139,15 @@ const CreateUserPage = () => {
                   className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent"
                 >
                   <option value="">Select role</option>
-                  <option value="super_admin">Super Admin</option>
-                  <option value="admin">Admin</option>
-                  <option value="user">User</option>
+                  {visibleRoles.map((role) => (
+                    <option key={role._id} value={role.name}>
+                      {role.name}
+                    </option>
+                  ))}
                 </select>
+                {visibleRoles.length === 0 && !error && (
+                  <p className="text-amber-600 text-xs mt-1">Create a role first to use it here.</p>
+                )}
                 {fieldErrors.role && <p className="text-red-600 text-xs mt-1">{fieldErrors.role}</p>}
               </div>
 

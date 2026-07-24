@@ -38,17 +38,28 @@ const validateUser = (form, isUpdate = false) => {
 
   if (!role) {
     errors.role = 'Role is required'
-  } else if (!['super_admin', 'admin', 'user'].includes(role)) {
-    errors.role = 'Role must be super_admin, admin or user'
   }
 
   return errors
+}
+
+const normalizeRoleName = (value) => value?.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
+
+const getCurrentAuthRole = () => {
+  try {
+    return localStorage.getItem('authRole') || JSON.parse(localStorage.getItem('authUser') || '{}')?.role || ''
+  } catch {
+    return ''
+  }
 }
 
 export const useUserHooks = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
+  const [roles, setRoles] = useState([])
+  const currentRole = getCurrentAuthRole()
+  const canSeeSuperAdmin = normalizeRoleName(currentRole) === 'superadmin'
 
   const resetMessages = useCallback(() => {
     setError('')
@@ -66,6 +77,24 @@ export const useUserHooks = () => {
 
     setForm((prev) => ({ ...prev, [name]: finalValue }))
     setFieldErrors((prev) => ({ ...prev, [name]: '' }))
+  }, [])
+
+  const getAllRoles = useCallback(async () => {
+    setError('')
+    try {
+      const res = await window.api.role.getAll()
+      if (res?.success) {
+        setRoles(res.roles || [])
+      } else {
+        setError(res?.error || 'Failed to fetch roles')
+      }
+      return res
+    } catch (err) {
+      console.error(err)
+      const message = 'An unexpected error occurred. Please try again.'
+      setError(message)
+      return { success: false, error: message }
+    }
   }, [])
 
   // ── CREATE USER ──
@@ -165,7 +194,7 @@ export const useUserHooks = () => {
     setLoading(true)
     setError('')
     try {
-      const res = await window.api.user.getAll()
+      const res = await window.api.user.getAll(currentRole)
       if (!res?.success) {
         setError(res?.error || 'Failed to fetch users')
       }
@@ -227,6 +256,10 @@ export const useUserHooks = () => {
     setFieldErrors,
     setError,
     handleChange,
+    currentRole,
+    canSeeSuperAdmin,
+    getAllRoles,
+    roles,
     createUser,
     updateUser,
     getUserById,

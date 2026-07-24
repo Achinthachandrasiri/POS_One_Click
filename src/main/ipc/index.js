@@ -11,6 +11,7 @@ import { registerUnitIpc } from './product/unit.ipc'
 import { registerProductIpc } from './product/product.ipc'
 import { registerGeneralSettingsIpc } from './settings/generalSettings.ipc'
 import { registerMailSettingsIpc } from './settings/mailSettings.ipc'
+import { registerRoleIpc } from './role/role.ipc'
 
 export const registerIpcHandlers = () => {
   registerAuthIpc()
@@ -26,4 +27,5 @@ export const registerIpcHandlers = () => {
   registerProductIpc()
   registerGeneralSettingsIpc()
   registerMailSettingsIpc()
+  registerRoleIpc()
 }

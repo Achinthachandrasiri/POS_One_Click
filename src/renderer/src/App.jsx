@@ -32,6 +32,7 @@ import CreateProduct from './components/Product/CreateProduct'
 import EditProduct from './components/Product/EditProduct'
 import GeneralSettings from './components/Settings/GeneralSettings'
 import MailSettings from './components/Settings/MailSettings'
+import RolesPermissions from './components/RolesandPermission/rolesAndPermission'
 
 function App() {
   return (
@@ -72,6 +73,7 @@ function App() {
         <Route path="products/edit/:id" element={<EditProduct />} />
         <Route path="settings/general" element={<GeneralSettings />} />
         <Route path="settings/mail" element={<MailSettings />} />
+        <Route path="roles" element={<RolesPermissions />} />
       </Route>
     </Routes>
   )
