@@ -10,7 +10,7 @@ contextBridge.exposeInMainWorld('api', {
   },
   user: {
     create: (data) => ipcRenderer.invoke('user:create', data),
-    getAll: () => ipcRenderer.invoke('user:getAll'),
+    getAll: (role) => ipcRenderer.invoke('user:getAll', role),
     getById: (id) => ipcRenderer.invoke('user:getById', id),
     update: (data) => ipcRenderer.invoke('user:update', data),
     delete: (id) => ipcRenderer.invoke('user:delete', id),
@@ -50,8 +50,13 @@ contextBridge.exposeInMainWorld('api', {
     getById: (id) => ipcRenderer.invoke('category:getById', id),
     update: (data) => ipcRenderer.invoke('category:update', data),
     delete: (id) => ipcRenderer.invoke('category:delete', id)
-  }
-  ,
+  },
+  role: {
+    getAll: () => ipcRenderer.invoke('role:getAll'),
+    create: (data) => ipcRenderer.invoke('role:create', data),
+    update: (data) => ipcRenderer.invoke('role:update', data),
+    delete: (id) => ipcRenderer.invoke('role:delete', id)
+  },
   variation: {
     create: (data) => ipcRenderer.invoke('variation:create', data),
     getAll: () => ipcRenderer.invoke('variation:getAll'),

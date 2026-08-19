@@ -90,7 +90,11 @@ const GeneralSettings = () => {
     const errs = {}
     if (!form.default_store) errs.default_store = 'Default store is required'
     if (!form.hotline.trim()) errs.hotline = 'Hotline is required'
-    if (!form.mobile.trim()) errs.mobile = 'Mobile is required'
+    if (!form.mobile.trim()) {
+      errs.mobile = 'Mobile is required'
+    } else if (!/^0\d{9}$/.test(form.mobile.trim())) {
+      errs.mobile = 'Mobile must be 10 digits and start with 0'
+    }
     if (!form.address.trim()) errs.address = 'Address is required'
     if (!form.company_name.trim()) errs.company_name = 'Company name is required'
     if (!form.email.trim()) errs.email = 'Email is required'
@@ -240,9 +244,17 @@ const GeneralSettings = () => {
                 <input
                   type="text"
                   value={form.mobile}
-                  onChange={(e) => updateForm('mobile', e.target.value)}
-                  placeholder="e.g. +94 77 123 4567"
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 10)
+                    updateForm('mobile', digits)
+                  }}
+                  onKeyDown={(e) => {
+                    const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab']
+                    if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) e.preventDefault()
+                  }}
+                  placeholder="e.g. 0771234567"
                   className={inputCls(fieldErrors.mobile)}
+                  maxLength={10}
                 />
               </Field>
 

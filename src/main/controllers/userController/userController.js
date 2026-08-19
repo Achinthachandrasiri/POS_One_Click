@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { User } from '../../models/userModel'
+import { Role } from '../../models/roleModel'
 
 // ── CONSTANTS ──
 const SALT_ROUNDS = 10
@@ -15,6 +16,8 @@ const serializeUser = (user) => {
     updatedAt: plain?.updatedAt?.toString ? plain.updatedAt.toString() : plain?.updatedAt
   }
 }
+
+const isSuperAdminRole = (value) => value?.trim().toLowerCase().replace(/[^a-z0-9]/g, '') === 'superadmin'
 
 // ── VALIDATION HELPER ──
 const validateUserFields = ({ first_name, last_name, email, mobile, password, role }) => {
@@ -43,8 +46,6 @@ const validateUserFields = ({ first_name, last_name, email, mobile, password, ro
 
   if (!role?.trim()) {
     errors.role = 'Role is required'
-  } else if (!['super_admin', 'admin', 'user'].includes(role.trim())) {
-    errors.role = 'Role must be super_admin, admin or user'
   }
 
   return errors
@@ -60,6 +61,11 @@ export const handleCreateUser = async (data) => {
   }
 
   try {
+    const roleExists = await Role.findOne({ name: role.trim() })
+    if (!roleExists) {
+      return { success: false, fieldErrors: { role: 'Selected role does not exist' } }
+    }
+
     const existingUser = await User.findOne({ email: email.trim().toLowerCase() })
     if (existingUser) {
       return { success: false, fieldErrors: { email: 'An account with this email already exists' } }
@@ -100,7 +106,7 @@ export const handleCreateUser = async (data) => {
 }
 
 // ── GET ALL USERS ──
-export const handleGetAllUsers = async () => {
+export const handleGetAllUsers = async (requesterRole) => {
   try {
     const users = await User.find({}, {
       password: 0,
@@ -110,7 +116,11 @@ export const handleGetAllUsers = async () => {
       .lean()
       .sort({ createdAt: -1 })
 
-    return { success: true, users: users.map(serializeUser) }
+    const visibleUsers = isSuperAdminRole(requesterRole)
+      ? users
+      : users.filter((user) => !isSuperAdminRole(user.role))
+
+    return { success: true, users: visibleUsers.map(serializeUser) }
   } catch (error) {
     console.error('Get all users error:', error)
     return { success: false, error: 'Failed to fetch users' }
@@ -164,6 +174,11 @@ export const handleUpdateUser = async (data) => {
   }
 
   try {
+    const roleExists = await Role.findOne({ name: role.trim() })
+    if (!roleExists) {
+      return { success: false, fieldErrors: { role: 'Selected role does not exist' } }
+    }
+
     const existingEmail = await User.findOne({ email: email.trim().toLowerCase(), _id: { $ne: id } })
     if (existingEmail) {
       return { success: false, fieldErrors: { email: 'An account with this email already exists' } }

@@ -2,10 +2,12 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useUserHooks } from '../../hooks/userHooks'
 
+const normalizeRoleName = (value) => value?.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
+
 const EditUser = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const {loading, error, fieldErrors, setError, handleChange, getUserById, updateUser } = useUserHooks()
+  const {loading, error, fieldErrors, setError, handleChange, getUserById, updateUser, getAllRoles, roles, canSeeSuperAdmin } = useUserHooks()
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
@@ -16,6 +18,13 @@ const EditUser = () => {
   const [success, setSuccess] = useState('')
 
   const onChange = useCallback(handleChange(setForm), [handleChange])
+  const visibleRoles = canSeeSuperAdmin
+    ? roles
+    : roles.filter((role) => normalizeRoleName(role.name) !== 'superadmin')
+
+  useEffect(() => {
+    getAllRoles()
+  }, [getAllRoles])
 
   useEffect(() => {
     const loadUser = async () => {
@@ -146,10 +155,15 @@ const EditUser = () => {
                   className="w-full border-b border-gray-300 focus:border-teal-600 outline-none py-1 bg-transparent text-gray-700"
                 >
                   <option value="">Select a role</option>
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                  <option value="super_admin">Super Admin</option>
+                  {visibleRoles.map((role) => (
+                    <option key={role._id} value={role.name}>
+                      {role.name}
+                    </option>
+                  ))}
                 </select>
+                {visibleRoles.length === 0 && !error && (
+                  <p className="text-amber-600 text-xs mt-1">Create a role first to use it here.</p>
+                )}
                 {fieldErrors.role && (
                   <p className="text-red-600 text-xs mt-1">{fieldErrors.role}</p>
                 )}
