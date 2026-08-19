@@ -10,6 +10,7 @@ body {
   background-image: url('./wavy-lines.svg');
   background-size: cover;
   user-select: none;
+  font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 }
 
 code {
@@ -159,4 +160,16 @@ code {
   .actions {
     display: none;
   }
+}
+
+/* Remove native number input spin buttons (Chrome/Edge/Safari + Firefox) —
+   applies globally so no individual input needs a class for it. */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
 }

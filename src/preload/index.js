@@ -114,6 +114,14 @@ contextBridge.exposeInMainWorld('api', {
     update: (data) => ipcRenderer.invoke('service:update', data),
     delete: (id) => ipcRenderer.invoke('service:delete', id)
   },
+  cashSession: {
+    open: (data) => ipcRenderer.invoke('cashSession:open', data),
+    checkActive: (data) => ipcRenderer.invoke('cashSession:checkActive', data),
+    close: (data) => ipcRenderer.invoke('cashSession:close', data),
+    getActive: (data) => ipcRenderer.invoke('cashSession:getActive', data),
+    getById: (id) => ipcRenderer.invoke('cashSession:getById', id),
+    getAll: (data) => ipcRenderer.invoke('cashSession:getAll', data)
+  },
   warrantyType: {
     create: (data) => ipcRenderer.invoke('warrantyType:create', data),
     getAll: () => ipcRenderer.invoke('warrantyType:getAll'),
@@ -126,6 +134,9 @@ contextBridge.exposeInMainWorld('api', {
     saveGeneral: (data) => ipcRenderer.invoke('settings:saveGeneral', data),
     getMail: () => ipcRenderer.invoke('settings:getMail'),
     saveMail: (data) => ipcRenderer.invoke('settings:saveMail', data),
+  },
+  sale: {
+    create: (data) => ipcRenderer.invoke('sale:create', data)
   },
   license: {
     activate: (key) => ipcRenderer.invoke('license:activate', key),

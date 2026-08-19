@@ -53,6 +53,7 @@ import ViewService from './components/Service/ViewService'
 import CreateWarranty from './components/Warranty/CreateWarranty'
 import EditWarranty from './components/Warranty/EditWarranty'
 import ViewWarranty from './components/Warranty/ViewWarranty'
+import PosScreen from './pos/mainScreen'
 
 function App() {
   const { isLicensed, checkLicense } = useLicense()
@@ -69,6 +70,10 @@ function App() {
       {/* Auth routes (outside layout) */}
       <Route path="/" element={<LoginPage />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* POS is a distraction-free working screen — deliberately kept outside
+          MainLayout so it renders full-bleed without the dashboard sidebar. */}
+      <Route path="/pos" element={<PosScreen />} />
 
       {/* App layout routes */}
       <Route path="/dashboard" element={<MainLayout />}>
