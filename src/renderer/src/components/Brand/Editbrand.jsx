@@ -136,7 +136,9 @@ const EditBrand = () => {
 
               {/* Brand Name */}
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Brand Name</label>
+                <label className="text-sm text-gray-700">
+                  Brand Name <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   name="brandName"

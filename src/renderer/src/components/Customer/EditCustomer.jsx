@@ -83,7 +83,9 @@ const EditCustomer = () => {
             {/* Row 1 — Name & Mobile */}
             <div className="flex gap-6">
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Name</label>
+                <label className="text-sm text-gray-700">
+                  Name <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   name="name"
@@ -95,7 +97,9 @@ const EditCustomer = () => {
                 {fieldErrors.name && <p className="text-red-600 text-xs mt-1">{fieldErrors.name}</p>}
               </div>
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Mobile Number</label>
+                <label className="text-sm text-gray-700">
+                  Mobile Number <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   name="mobileNumber"
@@ -112,7 +116,9 @@ const EditCustomer = () => {
             {/* Row 2 — NIC & empty */}
             <div className="flex gap-6">
               <div className="flex-1">
-                <label className="text-sm text-gray-700">NIC Number</label>
+                <label className="text-sm text-gray-700">
+                  NIC Number <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   name="nicNumber"
@@ -129,7 +135,9 @@ const EditCustomer = () => {
 
             {/* Address — full width */}
             <div>
-              <label className="text-sm text-gray-700">Address</label>
+              <label className="text-sm text-gray-700">
+                Address <span className="text-red-600">*</span>
+              </label>
               <textarea
                 name="address"
                 value={form.address}

@@ -57,7 +57,7 @@ const CreateCustomer = () => {
             <div className="flex gap-6">
               <div className="flex-1">
                 <label className="text-sm text-gray-700">
-                  Name
+                  Name <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -75,7 +75,7 @@ const CreateCustomer = () => {
               {/* Mobile */}
               <div className="flex-1">
                 <label className="text-sm text-gray-700">
-                  Mobile Number
+                  Mobile Number <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -96,7 +96,7 @@ const CreateCustomer = () => {
             <div className="flex gap-6">
               <div className="flex-1">
                 <label className="text-sm text-gray-700">
-                  NIC Number
+                  NIC Number <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -116,7 +116,7 @@ const CreateCustomer = () => {
             {/* Address */}
             <div className="flex-1">
               <label className="text-sm text-gray-700">
-                Address
+                Address <span className="text-red-600">*</span>
               </label>
               <input
                 name="address"

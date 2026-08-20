@@ -40,7 +40,9 @@ const EditVariation = () => {
             {error && <p className="text-red-600 mb-2">{error}</p>}
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Variation Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Variation Name <span className="text-red-600">*</span>
+              </label>
               <input name="variationName" value={form.variationName} onChange={handleChange} className="w-full border-2 border-gray-300 focus:border-[#1a6b7a] focus:outline-none rounded-lg p-2.5 text-sm" />
               {fieldErrors?.variationName && <p className="text-red-600 text-xs mt-1">{fieldErrors.variationName}</p>}
             </div>

@@ -83,7 +83,9 @@ const EditStore = () => {
             {/* Row 1 — Name & Store Key */}
             <div className="flex gap-6">
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Store Name</label>
+                <label className="text-sm text-gray-700">
+                  Store Name <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   name="name"
@@ -97,7 +99,9 @@ const EditStore = () => {
                 )}
               </div>
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Store Key</label>
+                <label className="text-sm text-gray-700">
+                  Store Key <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   name="store_key"

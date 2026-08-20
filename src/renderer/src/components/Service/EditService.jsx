@@ -167,7 +167,7 @@ const EditService = () => {
 
             <div className="grid grid-cols-2 gap-5">
               <div>
-                <label className={labelCls}>Service Name</label>
+                <label className={labelCls}>Service Name <span className="text-red-600 normal-case">*</span></label>
                 <input
                   type="text"
                   placeholder="e.g. Haircut"
@@ -179,7 +179,7 @@ const EditService = () => {
               </div>
 
               <div>
-                <label className={labelCls}>Service Code</label>
+                <label className={labelCls}>Service Code <span className="text-red-600 normal-case">*</span></label>
                 <input
                   type="text"
                   placeholder="e.g. SVC-001"
@@ -193,7 +193,7 @@ const EditService = () => {
 
             <div className="grid grid-cols-2 gap-5 mt-5">
               <div>
-                <label className={labelCls}>Category</label>
+                <label className={labelCls}>Category <span className="text-red-600 normal-case">*</span></label>
                 <select
                   value={form.category}
                   onChange={(e) => updateField('category', e.target.value)}
@@ -222,7 +222,7 @@ const EditService = () => {
 
             <div className="grid grid-cols-2 gap-5 mt-5">
               <div>
-                <label className={labelCls}>Cost</label>
+                <label className={labelCls}>Cost <span className="text-red-600 normal-case">*</span></label>
                 <input
                   type="number"
                   min="0"
@@ -236,7 +236,7 @@ const EditService = () => {
               </div>
 
               <div>
-                <label className={labelCls}>Price</label>
+                <label className={labelCls}>Price <span className="text-red-600 normal-case">*</span></label>
                 <input
                   type="number"
                   min="0"

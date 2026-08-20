@@ -113,7 +113,7 @@ const CreateExpenses = () => {
 
             <div className="grid grid-cols-2 gap-5">
               <div>
-                <label className={labelCls}>Date</label>
+                <label className={labelCls}>Date <span className="text-red-600 normal-case">*</span></label>
                 <input
                   type="date"
                   value={form.date}
@@ -125,7 +125,7 @@ const CreateExpenses = () => {
               </div>
 
               <div>
-                <label className={labelCls}>Amount</label>
+                <label className={labelCls}>Amount <span className="text-red-600 normal-case">*</span></label>
                 <input
                   type="number"
                   min="0"
@@ -140,7 +140,7 @@ const CreateExpenses = () => {
             </div>
 
             <div className="mt-5">
-              <label className={labelCls}>Reason</label>
+              <label className={labelCls}>Reason <span className="text-red-600 normal-case">*</span></label>
               <select
                 value={form.reason}
                 onChange={(e) => updateField('reason', e.target.value)}
@@ -157,7 +157,7 @@ const CreateExpenses = () => {
 
             {form.reason === 'Other' && (
               <div className="mt-5">
-                <label className={labelCls}>Specify reason</label>
+                <label className={labelCls}>Specify reason <span className="text-red-600 normal-case">*</span></label>
                 <input
                   type="text"
                   placeholder="Enter the reason…"
