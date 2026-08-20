@@ -53,6 +53,9 @@ import ViewService from './components/Service/ViewService'
 import CreateWarranty from './components/Warranty/CreateWarranty'
 import EditWarranty from './components/Warranty/EditWarranty'
 import ViewWarranty from './components/Warranty/ViewWarranty'
+import CreateOffer from './components/Offer/CreateOffer'
+import EditOffer from './components/Offer/EditOffer'
+import ViewOffer from './components/Offer/ViewOffer'
 import PosScreen from './pos/mainScreen'
 
 function App() {
@@ -125,6 +128,9 @@ function App() {
         <Route path="warranty" element={<ViewWarranty />} />
         <Route path="warranty/create" element={<CreateWarranty />} />
         <Route path="warranty/edit/:id" element={<EditWarranty />} />
+        <Route path="offers" element={<ViewOffer />} />
+        <Route path="offers/create" element={<CreateOffer />} />
+        <Route path="offers/edit/:id" element={<EditOffer />} />
       </Route>
     </Routes>
   )
