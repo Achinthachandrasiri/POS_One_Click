@@ -19,6 +19,7 @@ import {
   FiRepeat,
   FiFileText,
   FiTool,
+  FiGift,
   FiShield,
   FiLogOut
 } from "react-icons/fi"
@@ -200,6 +201,15 @@ const Sidebar = () => {
         >
           <FiTool />
           <span>Services</span>
+        </button>
+
+        {/* Offers */}
+        <button
+          onClick={() => navigate('/dashboard/offers')}
+          className="flex items-center gap-3 px-4 py-2.5 text-[15px] text-white hover:bg-[#0e5a6a] rounded-md"
+        >
+          <FiGift />
+          <span>Offers</span>
         </button>
 
         {/* Warranty */}

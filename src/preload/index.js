@@ -107,6 +107,13 @@ contextBridge.exposeInMainWorld('api', {
     getById: (id) => ipcRenderer.invoke('expense:getById', id),
     delete: (id, userId, userRole) => ipcRenderer.invoke('expense:delete', { id, userId, userRole })
   },
+  offer: {
+    create: (data) => ipcRenderer.invoke('offer:create', data),
+    getAll: (filters) => ipcRenderer.invoke('offer:getAll', filters),
+    getById: (id) => ipcRenderer.invoke('offer:getById', id),
+    update: (data) => ipcRenderer.invoke('offer:update', data),
+    delete: (id) => ipcRenderer.invoke('offer:delete', id)
+  },
   service: {
     create: (data) => ipcRenderer.invoke('service:create', data),
     getAll: (params) => ipcRenderer.invoke('service:getAll', params),
@@ -133,7 +140,7 @@ contextBridge.exposeInMainWorld('api', {
     getGeneral: () => ipcRenderer.invoke('settings:getGeneral'),
     saveGeneral: (data) => ipcRenderer.invoke('settings:saveGeneral', data),
     getMail: () => ipcRenderer.invoke('settings:getMail'),
-    saveMail: (data) => ipcRenderer.invoke('settings:saveMail', data),
+    saveMail: (data) => ipcRenderer.invoke('settings:saveMail', data)
   },
   sale: {
     create: (data) => ipcRenderer.invoke('sale:create', data)
