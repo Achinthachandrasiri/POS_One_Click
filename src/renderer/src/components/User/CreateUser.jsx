@@ -73,7 +73,9 @@ const CreateUserPage = () => {
             {/* Row 1 */}
             <div className="flex gap-6">
               <div className="flex-1">
-                <label className="text-sm text-gray-700">First Name</label>
+                <label className="text-sm text-gray-700">
+                  First Name <span className="text-red-600">*</span>
+                </label>
                 <input
                   name="first_name"
                   value={form.first_name}
@@ -84,7 +86,9 @@ const CreateUserPage = () => {
                 {fieldErrors.first_name && <p className="text-red-600 text-xs mt-1">{fieldErrors.first_name}</p>}
               </div>
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Last Name</label>
+                <label className="text-sm text-gray-700">
+                  Last Name <span className="text-red-600">*</span>
+                </label>
                 <input
                   name="last_name"
                   value={form.last_name}
@@ -99,7 +103,9 @@ const CreateUserPage = () => {
             {/* Email & Mobile */}
             <div className="flex gap-6">
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Email</label>
+                <label className="text-sm text-gray-700">
+                  Email <span className="text-red-600">*</span>
+                </label>
                 <input
                   name="email"
                   type="email"
@@ -112,7 +118,9 @@ const CreateUserPage = () => {
               </div>
 
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Mobile</label>
+                <label className="text-sm text-gray-700">
+                  Mobile Number<span className="text-red-600">*</span>
+                </label>
                 <input
                   name="mobile"
                   type="tel"
@@ -131,7 +139,9 @@ const CreateUserPage = () => {
             {/* Role & Password */}
             <div className="flex gap-6">
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Role</label>
+                <label className="text-sm text-gray-700">
+                  Role <span className="text-red-600">*</span>
+                </label>
                 <select
                   name="role"
                   value={form.role}
@@ -152,7 +162,9 @@ const CreateUserPage = () => {
               </div>
 
               <div className="flex-1 relative">
-                <label className="text-sm text-gray-700">Password</label>
+                <label className="text-sm text-gray-700">
+                  Password <span className="text-red-600">*</span>
+                </label>
                 <input
                   name="password"
                   type={showPassword ? 'text' : 'password'}

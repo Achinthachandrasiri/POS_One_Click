@@ -108,7 +108,14 @@ const Sidebar = () => {
       </div>
 
       {/* Nav */}
-      <nav className="flex flex-col gap-1 px-3 pt-5 flex-1">
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+      <nav
+        className="flex flex-col gap-1 px-3 pt-5 flex-1 no-scrollbar"
+        style={{ overflowY: 'auto', minHeight: 0 }}
+      >
 
         {/* Dashboard */}
         <button

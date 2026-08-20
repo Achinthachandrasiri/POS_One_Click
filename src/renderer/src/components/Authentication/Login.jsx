@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLogin } from '../../hooks/useLogin'
+import { FiEye, FiEyeOff } from 'react-icons/fi'
 
 const LoginPage = () => {
   const { username, setUsername, password, setPassword, error, fieldErrors, loading, bootstrapMessage, handleLogin } =
@@ -63,10 +64,11 @@ const LoginPage = () => {
 
               <button
                 type="button"
-                className="absolute right-0 top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer"
+                className="absolute right-0 top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer text-[#777] hover:text-[#1a6b7a] transition-colors"
                 onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
               </button>
             </div>
 

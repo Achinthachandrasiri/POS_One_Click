@@ -181,10 +181,10 @@ const EditExpenses = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-5">
-                <div>
-                  <label className={labelCls}>Date</label>
-                  <input
+                  <div className="grid grid-cols-2 gap-5">
+                    <div>
+                      <label className={labelCls}>Date <span className="text-red-600 normal-case">*</span></label>
+                      <input
                     type="date"
                     value={form.date}
                     onChange={(e) => updateField('date', e.target.value)}
@@ -194,12 +194,12 @@ const EditExpenses = () => {
                   {fieldErrors.date && <p className={errorCls}>{fieldErrors.date}</p>}
                 </div>
 
-                <div>
-                  <label className={labelCls}>Amount</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    <div>
+                      <label className={labelCls}>Amount <span className="text-red-600 normal-case">*</span></label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
                     placeholder="0.00"
                     value={form.amount}
                     onChange={(e) => updateField('amount', e.target.value)}
@@ -207,13 +207,13 @@ const EditExpenses = () => {
                   />
                   {fieldErrors.amount && <p className={errorCls}>{fieldErrors.amount}</p>}
                 </div>
-              </div>
+                  </div>
 
-              <div className="mt-5">
-                <label className={labelCls}>Reason</label>
-                <select
-                  value={form.reason}
-                  onChange={(e) => updateField('reason', e.target.value)}
+                  <div className="mt-5">
+                    <label className={labelCls}>Reason <span className="text-red-600 normal-case">*</span></label>
+                    <select
+                      value={form.reason}
+                      onChange={(e) => updateField('reason', e.target.value)}
                   className={selectCls}
                 >
                   <option value="">Select a reason…</option>
@@ -225,12 +225,12 @@ const EditExpenses = () => {
                 {fieldErrors.reason && <p className={errorCls}>{fieldErrors.reason}</p>}
               </div>
 
-              {form.reason === 'Other' && (
-                <div className="mt-5">
-                  <label className={labelCls}>Specify reason</label>
-                  <input
-                    type="text"
-                    placeholder="Enter the reason…"
+                  {form.reason === 'Other' && (
+                    <div className="mt-5">
+                      <label className={labelCls}>Specify reason <span className="text-red-600 normal-case">*</span></label>
+                      <input
+                        type="text"
+                        placeholder="Enter the reason…"
                     value={form.customReason}
                     onChange={(e) => updateField('customReason', e.target.value)}
                     className={inputCls}

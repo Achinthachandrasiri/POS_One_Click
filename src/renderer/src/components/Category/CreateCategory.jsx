@@ -121,7 +121,9 @@ const CreateCategory = () => {
 
               {/* Category Name */}
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Category Name</label>
+                <label className="text-sm text-gray-700">
+                  Category Name <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   name="categoryName"

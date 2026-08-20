@@ -90,7 +90,7 @@ const EditWarranty = () => {
 
               {/* Warranty Name */}
               <div className="mb-4">
-                <label className={labelCls}>Warranty Name</label>
+                <label className={labelCls}>Warranty Name <span className="text-red-600">*</span></label>
                 <input
                   type="text"
                   placeholder="e.g. 1 Year Manufacturer Warranty"

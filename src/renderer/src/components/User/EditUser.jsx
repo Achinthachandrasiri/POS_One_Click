@@ -80,7 +80,9 @@ const EditUser = () => {
             {/* Row 1 — First Name & Last Name */}
             <div className="flex gap-6">
               <div className="flex-1">
-                <label className="text-sm text-gray-700">First Name</label>
+                <label className="text-sm text-gray-700">
+                  First Name <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   name="first_name"
@@ -94,7 +96,9 @@ const EditUser = () => {
                 )}
               </div>
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Last Name</label>
+                <label className="text-sm text-gray-700">
+                  Last Name <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   name="last_name"
@@ -112,7 +116,9 @@ const EditUser = () => {
             {/* Row 2 — Email & Mobile */}
             <div className="flex gap-6">
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Email</label>
+                <label className="text-sm text-gray-700">
+                  Email <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   name="email"
@@ -126,7 +132,9 @@ const EditUser = () => {
                 )}
               </div>
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Mobile Number</label>
+                <label className="text-sm text-gray-700">
+                  Mobile Number <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="tel"
                   inputMode="numeric"
@@ -147,7 +155,9 @@ const EditUser = () => {
             {/* Row 3 — Role */}
             <div className="flex gap-6">
               <div className="flex-1">
-                <label className="text-sm text-gray-700">Role</label>
+                <label className="text-sm text-gray-700">
+                  Role <span className="text-red-600">*</span>
+                </label>
                 <select
                   name="role"
                   value={form.role}
